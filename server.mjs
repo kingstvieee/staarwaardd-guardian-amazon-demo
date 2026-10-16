@@ -6,14 +6,16 @@ const assets = {
   '/': ['amazon-judge.html', 'text/html'],
   '/amazon-judge.html': ['amazon-judge.html', 'text/html'],
   '/amazon-judge.js': ['amazon-judge.js', 'text/javascript'],
-  '/amazon-judge.css': ['amazon-judge.css', 'text/css']
+  '/amazon-judge.css': ['amazon-judge.css', 'text/css'],
+  '/assets/cover.webp': ['assets/cover.webp', 'image/webp'],
+  '/assets/worlds.webp': ['assets/worlds.webp', 'image/webp']
 };
 const port = Number(process.env.PORT || 3335);
 http.createServer(async (req, res) => {
   try {
     const path = new URL(req.url, 'http://localhost').pathname;
     if (path === '/api/amazon-guardian') {
-      // Local judge runner serves only free simulation modes; AWS remains a separate route.
+      // Demo-only runner serves free simulation modes; no AWS adapter is included.
       let raw = '';
       for await (const chunk of req) {
         raw += chunk;
@@ -38,3 +40,4 @@ http.createServer(async (req, res) => {
     res.end('Local judge runner failed');
   }
 }).listen(port, '127.0.0.1', () => console.log('Guardian simulation: http://127.0.0.1:' + port));
+

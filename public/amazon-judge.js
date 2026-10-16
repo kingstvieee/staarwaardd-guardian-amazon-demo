@@ -64,8 +64,9 @@ function render(data) {
     ['External actions without approval', metrics.externalActionsExecuted ?? 0]
   ].map(([label, value]) => `<div><b>${esc(String(value))}</b><span>${esc(label)}</span></div>`).join('');
 
+  $('#standby').hidden = true;
   $('#result').hidden = false;
-  $('#result').scrollIntoView({behavior:'smooth', block:'start'});
+  $('#studio').scrollIntoView({behavior:'smooth', block:'start'});
 }
 
 function esc(value) {
@@ -74,3 +75,4 @@ function esc(value) {
 
 $('#runJudge').addEventListener('click', () => run('judge'));
 $('#runCustom').addEventListener('click', () => run('plan'));
+

@@ -1,72 +1,19 @@
 <!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>STAARWAARDD Guardian — Amazon Judge Mode</title>
-  <link rel="stylesheet" href="/amazon-judge.css">
-</head>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>STAARWAARDD / The Guardian Issue</title><link rel="stylesheet" href="/amazon-judge.css"></head>
 <body>
-  <main class="shell">
-    <header class="hero">
-      <p class="eyebrow">AMAZON DEVELOPER HACKATHON 2026 · ALEXA+ SIMULATION</p>
-      <h1>One signal. Seven worlds. One Guardian.</h1>
-      <p class="lede">This web simulation accepts one Alexa+-style request and prepares a cross-portal plan. It does not connect to an Alexa device, MCP server, or personal accounts. External actions require approval and are never executed here.</p>
-      <div class="actions">
-        <button id="runJudge" type="button">Run judge scenario</button>
-      </div>
-    </header>
-
-    <section class="architecture" aria-label="Architecture">
-      <div><span>EXPERIENCE</span><b>Alexa+-style simulation</b></div>
-      <div><span>DEMO API</span><b>HTTPS JSON</b></div>
-      <div><span>PLANNER</span><b>Guardian preview</b></div>
-      <div><span>RUNTIME</span><b>Local simulation · no AWS calls</b></div>
-    </section>
-
-    <section class="request-card">
-      <label for="request">Judge request</label>
-      <textarea id="request" rows="3">Guardian, my investor pitch is running late. Keep my launch, fitting, anniversary dinner, gift delivery, and home arrival on track without sending or changing anything unless I approve it.</textarea>
-      <button id="runCustom" type="button">Run Guardian</button>
-    </section>
-
-    <section id="status" class="status" aria-live="polite">Ready.</section>
-
-    <section id="result" hidden>
-      <div class="score-grid">
-        <article><span>TECH</span><b>Demo scope</b><p id="techProof"></p></article>
-        <article><span>DESIGN</span><b>One request</b><p id="designProof"></p></article>
-        <article><span>IMPACT</span><b>Illustrative</b><p id="impactProof"></p></article>
-        <article><span>IDEA</span><b>Coordination</b><p id="ideaProof"></p></article>
-      </div>
-
-      <section class="guardian-briefing">
-        <p class="eyebrow">GUARDIAN BRIEFING</p>
-        <h2 id="summary"></h2>
-        <p id="decision"></p>
-      </section>
-
-      <section>
-        <h2>Portal coordination</h2>
-        <div id="portals" class="portals"></div>
-      </section>
-
-      <section>
-        <h2>Illustrative cross-portal exchanges</h2>
-        <ol id="exchanges" class="timeline"></ol>
-      </section>
-
-      <section>
-        <h2>Prepared actions</h2>
-        <div id="actionsList" class="action-list"></div>
-      </section>
-
-      <section class="impact">
-        <h2>Simulation counters</h2>
-        <div id="metrics" class="metrics"></div>
-      </section>
-    </section>
-  </main>
-<script src="/amazon-judge.js" defer></script>
-</body>
-</html>
+<nav class="mastnav" aria-label="Magazine navigation"><a class="wordmark" href="#cover">STAARWAARDD<span>THE GUARDIAN ISSUE</span></a><div><a href="#worlds">01 / WORLDS</a><a href="#studio">02 / LIVE DEMO</a><a href="#boundaries">03 / CONTROL</a></div><span class="edition">TORONTO · ISSUE 001 · 2026</span></nav>
+<main>
+<section class="spread cover" id="cover" aria-label="Magazine cover"><img class="cover-art" src="/assets/cover.webp" alt="Concept artwork of futuristic Toronto and luminous architectural portals"><div class="cover-shade"></div><div class="cover-top"><span>SEVEN PORTALS.<br>ONE GUARDIAN.</span><span>AN ALEXA+-STYLE<br>SIMULATED EXPERIENCE</span></div><div class="cover-copy"><p class="eyebrow">A STAARWAARDD DIGITAL EDITORIAL</p><h1>LIFE.<br>BEYOND<br><i>THE TABS.</i></h1><p class="deck">One request. A clearer view across your worlds.<br>A human at the centre of every decision.</p><a class="pill light" href="#studio">ENTER THE WORKING DEMO <span>↗</span></a></div><div class="cover-bottom"><p>WORK / CREATIVITY / HOME / WELLBEING<br>RELATIONSHIPS / COMMUNITY / STYLE</p><span>CONCEPT ART · PRODUCT VISION<br>FUNCTIONAL SIMULATION INSIDE ↓</span></div><div class="vertical-note">THE FUTURE IS PERSONAL.</div></section>
+<section class="spread worlds" id="worlds" aria-label="Seven worlds editorial"><div class="section-top"><p class="eyebrow">01 / THE WORLD ATLAS</p><span>CONCEPT IMAGERY · SEVEN LIFE DOMAINS</span></div><div class="editorial-head"><h2>Your life doesn't<br>fit in <em>one window.</em></h2><p>A work change ripples into your evening, your home, your people. Guardian's simulation brings the relevant domains into one visible preparation plan.</p></div><div class="world-grid">
+<article class="world-tile work"><div class="world-image"></div><span class="world-number">01</span><div><small>FOCUS / AMBITION</small><h3>Work</h3><p>See what needs your attention.</p></div></article>
+<article class="world-tile creativity"><div class="world-image"></div><span class="world-number">02</span><div><small>IDEAS / EXPRESSION</small><h3>Creativity</h3><p>Make space for the next idea.</p></div></article>
+<article class="world-tile home"><div class="world-image"></div><span class="world-number">03</span><div><small>SPACE / ARRIVAL</small><h3>Home</h3><p>Bring the day back into balance.</p></div></article>
+<article class="world-tile wellbeing"><div class="world-image"></div><span class="world-number">04</span><div><small>ENERGY / RESET</small><h3>Wellbeing</h3><p>Leave room to breathe.</p></div></article>
+<article class="world-tile relationships"><div class="world-image"></div><span class="world-number">05</span><div><small>PEOPLE / COMMITMENTS</small><h3>Relationships</h3><p>Keep what matters in view.</p></div></article>
+<article class="world-tile community"><div class="world-image"></div><span class="world-number">06</span><div><small>PLACE / CONNECTION</small><h3>Community</h3><p>Find your place in the city.</p></div></article>
+<article class="world-tile style"><div class="world-image"></div><span class="world-number">07</span><div><small>IDENTITY / PRESENCE</small><h3>Style</h3><p>Arrive as yourself.</p></div></article>
+</div><footer class="folio"><span>STAARWAARDD / THE GUARDIAN ISSUE</span><span>THESE ARE VISION IMAGES, NOT CONNECTED SERVICES.</span><b>02</b></footer></section>
+<section class="spread studio" id="studio" aria-label="Working Guardian simulation"><div class="section-top"><p class="eyebrow">02 / THE LIVE STUDIO</p><span class="live-label"><i></i> WORKING WEB SIMULATION</span></div><div class="studio-grid"><div class="studio-input"><h2>One request.<br><em>See the ripple.</em></h2><div class="studio-picture"><img src="/assets/cover.webp" alt="Concept portal above Toronto"><span>TORONTO / A CONNECTED-LIFE VISION</span></div><label for="request">YOUR REQUEST</label><textarea id="request" rows="3">Publish my campaign and unlock my home door</textarea><div class="studio-buttons"><button id="runCustom" class="pill dark">RUN GUARDIAN <span>↗</span></button><button id="runJudge" class="text-button">Try the full judge scenario →</button></div><p id="status" role="status" aria-live="polite">Ready. Choose a scenario or enter your own request.</p><p class="scope-note">Deterministic keyword routing. No Alexa, AWS, personal-account or device connection. External actions are never executed.</p></div><div class="studio-output"><div id="standby"><span class="giant-number">01<span>→07</span></span><h3>The right domains.<br>A visible boundary.</h3><p>Run a request to see selected domains, preparation steps and approval status.</p><div class="standby-rule"><b>YOU REMAIN IN CONTROL.</b><span>PREPARE → REVIEW → NO EXECUTION</span></div></div><div id="result" hidden><div class="briefing"><p class="eyebrow">GUARDIAN / PREPARATION PREVIEW</p><h3 id="summary"></h3><p id="decision"></p></div><div id="portals" class="portals"></div><div class="output-heading"><h4>PREPARED STEPS</h4><span>SIMULATION OUTPUT</span></div><div id="actionsList" class="action-list"></div><div id="metrics" class="metrics"></div><details><summary>Inspect the illustrative coordination trace</summary><ol id="exchanges" class="timeline"></ol></details></div></div></div><footer class="folio"><span>STAARWAARDD / GUARDIAN</span><span>LIVE INPUT. VISIBLE OUTPUT. NO EXTERNAL SIDE EFFECTS.</span><b>03</b></footer></section>
+<section class="spread boundaries" id="boundaries" aria-label="Human control and evidence"><div class="section-top"><p class="eyebrow">03 / THE HUMAN BOUNDARY</p><span>BUILT TO MAKE THE LIMIT VISIBLE</span></div><div class="boundary-grid"><div><h2>PREPARE.<br>THEN <em>ASK.</em></h2><p class="boundary-deck">A plan is not permission.<br>Your world stays yours.</p><div class="boundary-image"><img src="/assets/cover.webp" alt="Concept architectural window into a future world"><span>VISION ART / NOT LIVE DEVICE FOOTAGE</span></div></div><div class="boundary-right"><div class="feature"><b>01</b><div><h3>External-action requests stop for review.</h3><p>The publish-and-unlock example selects Creativity and Home. Both receive approval markers. No message, purchase, publication or unlock occurs.</p></div></div><div class="feature"><b>02</b><div><h3>Preparation stays preparation.</h3><p>“Prepare my meeting notes” selects Work and displays SAFE TO PREPARE. It does not read your calendar or create a real document.</p></div></div><div class="feature"><b>03</b><div><h3>The proof is inspectable.</h3><p>Public demo-only source. MIT license. Reproducible tests. The wider STAARWAARDD app and brand assets are excluded.</p></div></div><div class="proof-grid"><article><span>TECH / VERIFIED SCOPE</span><p id="techProof">Browser → JSON API → deterministic planner. No live Alexa or AWS integration.</p></article><article><span>DESIGN / ONE REQUEST</span><p id="designProof">Visible domains, preparation steps and approval markers.</p></article><article><span>IMPACT / ILLUSTRATIVE</span><p id="impactProof">No customer adoption or real-world time saving has been measured.</p></article><article><span>IDEA / GUARDIAN</span><p id="ideaProof">Explore one coherent view across the parts of a busy life.</p></article></div><p class="honesty">The planner is keyword-based and generic. It cannot reliably interpret negation or assign action ownership, so external-action keywords conservatively hold every selected domain for review.</p></div></div><footer class="folio"><span>STAARWAARDD / THE GUARDIAN ISSUE</span><span>CONCEPT VISUALS ≠ VERIFIED INTEGRATIONS.</span><b>04</b></footer></section>
+<section class="spread finale" id="finale" aria-label="Source and next steps"><img src="/assets/cover.webp" alt="Cinematic concept artwork of Toronto and seven portals"><div class="finale-shade"></div><div class="finale-copy"><p class="eyebrow">STAARWAARDD</p><h2>SEVEN PORTALS.<br>ONE <em>GUARDIAN.</em></h2><p>Built in Toronto.<br>Designed around the human.</p><div class="finale-actions"><a class="pill light" href="#studio">TRY A FRESH REQUEST ↗</a><a class="source-link" href="https://github.com/kingstvieee/staarwaardd-guardian-amazon-demo">PUBLIC DEMO SOURCE →</a></div><small>AMAZON DEVELOPER HACKATHON / ALEXA+-STYLE SIMULATION<br>CONCEPT IMAGERY. FUNCTIONING WEB PREVIEW. NO LIVE ALEXA CONNECTION.</small></div></section>
+</main><script src="/amazon-judge.js" defer></script></body></html>

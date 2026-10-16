@@ -52,8 +52,6 @@ The original cross-life-ai repository was publicly visible when checked; this ex
 Use this repository for the existing Devpost project **1191047 — STAARWAARDD Guardian for Alexa+**. At the last live inspection it remained DRAFT. A public functioning-demo video under three minutes and final submission are still outstanding. This repository is not proof of submission.
 
 
-## Single-file offline preview
+## The Guardian Issue — editorial demo
 
-Open `dist/guardian-demo.html` directly in a normal browser after downloading the repository. Rebuild it with `node build-standalone.mjs`. The bundle is generated from the same planner, handler and UI source. A local in-browser adapter calls the handler instead of HTTP fetch; the screen explicitly labels this mode as offline with no network/backend connection. It is a functional simulation, not a recording or a live Alexa demonstration. The standard `npm start` HTTP route remains available.
-
-Validation on October 16: the offline adapter produced the same plans as the canonical API for the judge scenario, a mixed publish/unlock request and a preparation-only request. Cloud-browser file navigation is restricted, so visual capture of this file was not completed in that environment.
+The judge runner now presents five magazine spreads: a futuristic Toronto cover, seven-domain world atlas, functioning request studio, human-control explanation, and source showcase. The generated architecture imagery illustrates product vision; it does not depict live integrations, devices, customers, or shipped services. The two original AI-generated demo illustrations in `public/assets` are included in this demo export. The broader application's proprietary assets and implementation remain excluded. Typography uses optional Google Fonts with system fallbacks. The standalone build embeds its imagery and removes that font request.
