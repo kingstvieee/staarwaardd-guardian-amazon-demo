@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>STAARWAARDD Guardian — Amazon Judge Mode</title>
+  <style>*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top,#fff 0,#f4f1e8 38%,#d9d9d9 100%);color:#161616;font-family:Inter,Arial,sans-serif}.shell{width:min(1180px,92vw);margin:0 auto;padding:48px 0 80px}.hero{padding:42px;border:1px solid rgba(0,0,0,.12);background:rgba(255,255,255,.78);backdrop-filter:blur(18px);box-shadow:0 20px 60px rgba(0,0,0,.08)}.eyebrow{letter-spacing:.18em;font-size:.72rem;font-weight:800}.hero h1{font-size:clamp(2.5rem,7vw,6rem);line-height:.92;margin:.35em 0 .28em}.lede{max-width:900px;font-size:1.12rem;line-height:1.65}.actions{display:flex;gap:14px;flex-wrap:wrap;margin-top:24px}.actions button,.actions a,#runCustom{border:1px solid #111;background:#111;color:#fff;padding:14px 18px;font-weight:800;text-decoration:none;cursor:pointer}.actions a{background:#fff;color:#111}.architecture,.score-grid,.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:20px 0}.architecture div,.score-grid article,.metrics div,.request-card,.guardian-briefing,.status{background:#fff;border:1px solid rgba(0,0,0,.12);padding:20px}.architecture span,.score-grid span,.metrics span{display:block;font-size:.7rem;letter-spacing:.12em;font-weight:800;opacity:.62}.architecture b,.score-grid b,.metrics b{display:block;margin-top:6px;font-size:1.15rem}.request-card label{display:block;font-weight:800;margin-bottom:8px}.request-card textarea{width:100%;padding:14px;border:1px solid #bbb;font:inherit;margin-bottom:12px}.status{margin:18px 0;font-weight:700}.guardian-briefing{margin:24px 0;border-top:5px solid #c7a85b}.guardian-briefing h2{font-size:2rem;margin:.25em 0}.portals{display:grid;grid-template-columns:repeat(7,1fr);gap:10px}.portal-card{background:#111;color:#fff;padding:18px;min-height:130px;display:flex;flex-direction:column;justify-content:flex-end}.portal-card span{opacity:.45;font-size:.75rem}.portal-card b{font-size:1.05rem}.portal-card small{font-size:.62rem;letter-spacing:.12em;margin-top:8px;color:#d8bf7a}.timeline{padding:0;list-style:none}.timeline li{display:grid;grid-template-columns:1fr 2fr 1fr;gap:12px;align-items:center;background:#fff;border:1px solid #ddd;padding:14px;margin:10px 0}.timeline span{text-align:center}.action-list{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.action-card{background:#fff;border:1px solid #ddd;padding:18px}.action-card.approval{border-left:5px solid #c7a85b}.action-card div{display:flex;justify-content:space-between;gap:12px}.action-card span,.action-card em{font-size:.68rem;font-weight:800;letter-spacing:.1em}.action-card em{font-style:normal;color:#856d2e}.impact{margin-top:28px}@media(max-width:900px){.architecture,.score-grid,.metrics{grid-template-columns:repeat(2,1fr)}.portals{grid-template-columns:repeat(2,1fr)}.action-list{grid-template-columns:1fr}.timeline li{grid-template-columns:1fr}.timeline span{text-align:left}}@media(max-width:560px){.architecture,.score-grid,.metrics{grid-template-columns:1fr}.hero{padding:26px}}
+
+</style>
+</head>
+<body>
+  <main class="shell">
+    <header class="hero">
+      <p class="eyebrow">AMAZON DEVELOPER HACKATHON 2026 · ALEXA+ SIMULATION</p>
+      <h1>One signal. Seven worlds. One Guardian.</h1>
+      <p class="lede">This web simulation accepts one Alexa+-style request and prepares a cross-portal plan. It does not connect to an Alexa device, MCP server, or personal accounts. External actions require approval and are never executed here.</p>
+      <div class="actions">
+        <button id="runJudge" type="button">Run judge scenario</button>
+      </div>
+    </header>
+
+    <section class="architecture" aria-label="Architecture">
+      <div><span>EXPERIENCE</span><b>Alexa+-style simulation</b></div>
+      <div><span>LOCAL PREVIEW</span><b>Same handler · no network</b></div>
+      <div><span>PLANNER</span><b>Guardian preview</b></div>
+      <div><span>RUNTIME</span><b>Local simulation · no AWS calls</b></div>
+    </section>
+
+    <section class="request-card">
+      <label for="request">Judge request</label>
+      <textarea id="request" rows="3">Guardian, my investor pitch is running late. Keep my launch, fitting, anniversary dinner, gift delivery, and home arrival on track without sending or changing anything unless I approve it.</textarea>
+      <button id="runCustom" type="button">Run Guardian</button>
+    </section>
+
+    <p class="status">Offline source preview: the same planner and handler run inside this browser. No backend, AWS, AI model or Alexa connection is used.</p>
+<section id="status" class="status" aria-live="polite">Ready.</section>
+
+    <section id="result" hidden>
+      <div class="score-grid">
+        <article><span>TECH</span><b>Demo scope</b><p id="techProof"></p></article>
+        <article><span>DESIGN</span><b>One request</b><p id="designProof"></p></article>
+        <article><span>IMPACT</span><b>Illustrative</b><p id="impactProof"></p></article>
+        <article><span>IDEA</span><b>Coordination</b><p id="ideaProof"></p></article>
+      </div>
+
+      <section class="guardian-briefing">
+        <p class="eyebrow">GUARDIAN BRIEFING</p>
+        <h2 id="summary"></h2>
+        <p id="decision"></p>
+      </section>
+
+      <section>
+        <h2>Portal coordination</h2>
+        <div id="portals" class="portals"></div>
+      </section>
+
+      <section>
+        <h2>Illustrative cross-portal exchanges</h2>
+        <ol id="exchanges" class="timeline"></ol>
+      </section>
+
+      <section>
+        <h2>Prepared actions</h2>
+        <div id="actionsList" class="action-list"></div>
+      </section>
+
+      <section class="impact">
+        <h2>Simulation counters</h2>
+        <div id="metrics" class="metrics"></div>
+      </section>
+    </section>
+  </main>
+<script>const PORTALS = Object.freeze(['Work','Creativity','Home','Wellbeing','Relationships','Community','Style']);
+
+const portalKeywords = {
+  Work: ['work','meeting','calendar','deadline','project','email','schedule','pitch','investor'],
+  Creativity: ['creative','design','content','media','publish','diggitstaar','campaign','launch'],
+  Home: ['home','lights','security','temperature','arrival','device','routine','staar access'],
+  Wellbeing: ['wellbeing','wellness','sleep','stress','exercise','food','water','reset'],
+  Relationships: ['relationship','partner','friend','family','dinner','anniversary','gift','message'],
+  Community: ['community','event','venue','toronto','local','accessibility','route','check-in'],
+  Style: ['style','outfit','wardrobe','fitting','stylist','rising staardform','clothes']
+};
+const externalActionPattern = /\b(send|message|email|invite|book|buy|purchase|cancel|delete|share|publish|pay|order|post|register|rsvp|unlock|lock|turn on|turn off|change temperature)\b/i;
+
+function detectPortals(request='') {
+  const text = String(request).toLowerCase();
+  const matches = PORTALS.filter((portal) => portalKeywords[portal].some((keyword) => text.includes(keyword)));
+  return matches.length ? matches : ['Work','Wellbeing'];
+}
+
+function requiresApproval(request='') { return externalActionPattern.test(String(request)); }
+
+function buildGuardianPlan(request, context={}) {
+  const portals = detectPortals(request);
+  const approvalRequired = requiresApproval(request);
+  // Conservative simulation boundary: a mixed request holds every domain for review.
+  // This keyword planner cannot reliably attribute each external action to a domain.
+  const steps = portals.map((portal,index)=>({
+    id:`${portal.toLowerCase()}-${index+1}`,
+    portal,
+    capability: capabilityFor(portal),
+    status: approvalRequired ? 'awaiting_approval' : 'prepared',
+    externalAction: approvalRequired,
+    summary: `${portal} prepares its part of: ${String(request).replace(/\s+/g,' ').trim().slice(0,140)}`
+  }));
+  return {
+    request:String(request), mode:'guardian_orchestration', portals, approvalRequired,
+    state:approvalRequired?'prepared_for_approval':'prepared', context, steps,
+    outcome:approvalRequired
+      ? 'Guardian prepared the cross-portal plan and stopped before the first external action.'
+      : 'Guardian coordinated the relevant portals and prepared the result without external side effects.'
+  };
+}
+
+function judgeScenario() {
+  const request = 'Guardian, my investor pitch is running late. Prepare my launch, fitting, anniversary dinner, gift delivery, wellbeing reset and home arrival. Draft a message about the dinner but do not send it.';
+  const plan = buildGuardianPlan(request,{location:'Toronto'});
+  return {
+    ...plan,
+    metrics:{disconnectedAppsReplaced:5,portalsCoordinated:plan.portals.length,userRequestsRequired:1,unsafeAutomaticActions:0},
+    narration:[
+      'Guardian detects one timing conflict instead of waiting for seven separate prompts.',
+      'Work protects the investor meeting boundary and shares only relevant timing context.',
+      'Creativity stages the DIGGITSTAAR launch package without publishing it.',
+      'Style prepares the RISING STAARDFORM fitting update.',
+      'Relationships protects the anniversary dinner and gift context.',
+      'Wellbeing inserts a practical transition reset without diagnosing the user.',
+      'Home prepares STAAR Access for the revised arrival while device changes remain behind approval.'
+    ]
+  };
+}
+
+function capabilityFor(portal){
+  return {Work:'schedule_conflict_resolution',Creativity:'diggitstaar_release_orchestration',Home:'staar_access_arrival_routine',Wellbeing:'permission_scoped_reset',Relationships:'commitment_coordination',Community:'local_access_and_route_context',Style:'rising_staardform_fitting_flow'}[portal];
+}
+
+
+
+async function handler(request, response) {
+  response.setHeader('Cache-Control', 'no-store');
+
+  if (request.method === 'GET') {
+    return response.status(200).json({
+      ok: true,
+      product: 'STAARWAARDD Guardian',
+      track: 'Alexa+ simulated experience',
+      miniChallenge: 'None claimed',
+      mode: 'competition-judge-api',
+      awsRuntime: 'Not included in this demo-only export',
+      
+      portals: ['Creativity','Work','Home','Wellbeing','Relationships','Community','Style']
+    });
+  }
+
+  if (request.method !== 'POST') {
+    return response.status(405).json({ error: 'Method not allowed' });
+  }
+
+  const body = request.body || {};
+  const input = String(body.input || 'Guardian, get me ready for tomorrow').slice(0, 2000);
+
+  if (body.mode === 'bedrock') {
+    return response.status(400).json({ok:false, error:'AWS is not included in this demo-only source export.'});
+  }
+
+  const mode = body.mode === 'judge' ? 'judge' : 'plan';
+  const raw = mode === 'judge'
+    ? judgeScenario()
+    : buildGuardianPlan(input, { source: 'Alexa+ simulated experience' });
+  const domains = raw.portals || [];
+  const steps = raw.steps || [];
+  const exchanges = domains.slice(1).map((domain, index) => ({
+    from: domains[index],
+    to: domain,
+    signal: `${domains[index]} context passed only because it affects ${domain}`
+  }));
+  const tasks = steps.map((step, index) => ({
+    domain: step.portal,
+    title: step.capability.replaceAll('_', ' '),
+    detail: step.summary,
+    time: index < 2 ? 'Now' : 'Today',
+    sensitive: Boolean(step.externalAction),
+    action: step.status
+  }));
+  const approvalsRequired = tasks.filter((item) => item.sensitive).length;
+  const plan = {
+    summary: raw.outcome,
+    domains,
+    coordination: {
+      detected: raw.request,
+      agents: domains,
+      exchanges,
+      decision: raw.approvalRequired
+        ? 'Guardian prepared the work and stopped before any external action. Explicit approval is required.'
+        : 'Guardian coordinated the relevant portals with no external side effects.'
+    },
+    now: tasks.slice(0, Math.min(3, tasks.length)),
+    today: tasks.slice(Math.min(3, tasks.length)),
+    week: []
+  };
+
+  return response.status(200).json({
+    ok: true,
+    mode,
+    architecture: {
+      interface: 'Alexa+-style web simulation',
+      protocol: 'HTTPS JSON demo API; no Alexa/MCP connection',
+      orchestrator: 'Guardian',
+      aws: 'No AWS invocation in this demo'
+    },
+    plan,
+    raw,
+    narration: raw.narration || [],
+    metrics: {
+      userRequests: raw.metrics?.userRequestsRequired ?? 1,
+      portalsActivated: raw.metrics?.portalsCoordinated ?? domains.length,
+      disconnectedAppsReplaced: raw.metrics?.disconnectedAppsReplaced ?? Math.max(1, domains.length - 1),
+      crossPortalExchanges: exchanges.length,
+      approvalsRequired,
+      externalActionsExecuted: raw.metrics?.unsafeAutomaticActions ?? 0
+    }
+  });
+}
+
+
+async function localDemoRequest(_url, options) {
+  let code = 200, payload;
+  const response = {setHeader(){}, status(value){code=value;return this;}, json(value){payload=value;return this;}};
+  await handler({method:options.method, body:JSON.parse(options.body)}, response);
+  if (payload.architecture) payload.architecture.protocol = 'Local in-browser handler; no network/Alexa/MCP connection';
+  return {ok:code>=200 && code<300, json:async()=>payload};
+}
+const $ = (s) => document.querySelector(s);
+
+async function run(mode) {
+  const status = $('#status');
+  const result = $('#result');
+  status.textContent = 'Guardian is coordinating across the relevant portals…';
+  result.hidden = true;
+  try {
+    const response = await localDemoRequest('/api/amazon-guardian', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({mode, input: $('#request').value})
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Judge scenario failed');
+    render(data);
+    status.textContent = 'Guardian coordination complete. Sensitive actions remain approval-gated.';
+  } catch (error) {
+    status.textContent = error.message;
+  }
+}
+
+function render(data) {
+  const plan = data.plan || data;
+  const coordination = plan.coordination || {};
+  const domains = plan.domains || [];
+  $('#summary').textContent = plan.summary || 'Guardian coordinated the request.';
+  $('#decision').textContent = coordination.decision || 'Prepared actions only; approval required for external changes.';
+
+  $('#techProof').textContent = `${data.architecture?.interface || 'Web simulation'} → ${data.architecture?.protocol || 'HTTPS JSON'} → ${data.architecture?.orchestrator || 'Guardian'}. This source export makes no AWS calls.`;
+  $('#designProof').textContent = 'One request produces a briefing, portal trace, and approval state in a simulated scenario.';
+  $('#impactProof').textContent = 'Illustrates fewer app handoffs; no real-world time saving or customer adoption is measured in this demo.';
+  $('#ideaProof').textContent = 'Guardian acts as a whole-life orchestration layer rather than a single-purpose chatbot.';
+
+  $('#portals').innerHTML = domains.map((domain, index) => `
+    <article class="portal-card">
+      <span>${String(index + 1).padStart(2,'0')}</span>
+      <b>${esc(domain)}</b>
+      <small>PLANNED DOMAIN</small>
+    </article>`).join('');
+
+  $('#exchanges').innerHTML = (coordination.exchanges || []).map((x) => `
+    <li><b>${esc(x.from)}</b><span>${esc(x.signal)}</span><b>${esc(x.to)}</b></li>`).join('') || '<li>No unnecessary cross-portal exchange was required.</li>';
+
+  const actions = [...(plan.now || []), ...(plan.today || []), ...(plan.week || [])];
+  $('#actionsList').innerHTML = actions.map((item) => `
+    <article class="action-card ${item.sensitive ? 'approval' : ''}">
+      <div><span>${esc(item.domain)}</span>${item.sensitive ? '<em>APPROVAL REQUIRED</em>' : '<em>SAFE TO PREPARE</em>'}</div>
+      <h3>${esc(item.title)}</h3>
+      <p>${esc(item.detail)}</p>
+      <small>${esc(item.time || '')}</small>
+    </article>`).join('');
+
+  const metrics = data.metrics || {
+    portalsActivated: domains.length,
+    externalActionsExecuted: 0,
+    approvalsRequired: actions.filter(a => a.sensitive).length,
+    userRequests: 1
+  };
+  $('#metrics').innerHTML = [
+    ['User requests', metrics.userRequests ?? 1],
+    ['Relevant portals', metrics.portalsActivated ?? domains.length],
+    ['Cross-portal exchanges', metrics.crossPortalExchanges ?? (coordination.exchanges || []).length],
+    ['External actions without approval', metrics.externalActionsExecuted ?? 0]
+  ].map(([label, value]) => `<div><b>${esc(String(value))}</b><span>${esc(label)}</span></div>`).join('');
+
+  $('#result').hidden = false;
+  $('#result').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function esc(value) {
+  return String(value ?? '').replace(/[&<>'"]/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+}
+
+$('#runJudge').addEventListener('click', () => run('judge'));
+$('#runCustom').addEventListener('click', () => run('plan'));
+
+</script>
+</body>
+</html>
+

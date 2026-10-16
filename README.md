@@ -50,3 +50,10 @@ The original cross-life-ai repository was publicly visible when checked; this ex
 ## Submission status
 
 Use this repository for the existing Devpost project **1191047 — STAARWAARDD Guardian for Alexa+**. At the last live inspection it remained DRAFT. A public functioning-demo video under three minutes and final submission are still outstanding. This repository is not proof of submission.
+
+
+## Single-file offline preview
+
+Open `dist/guardian-demo.html` directly in a normal browser after downloading the repository. Rebuild it with `node build-standalone.mjs`. The bundle is generated from the same planner, handler and UI source. A local in-browser adapter calls the handler instead of HTTP fetch; the screen explicitly labels this mode as offline with no network/backend connection. It is a functional simulation, not a recording or a live Alexa demonstration. The standard `npm start` HTTP route remains available.
+
+Validation on October 16: the offline adapter produced the same plans as the canonical API for the judge scenario, a mixed publish/unlock request and a preparation-only request. Cloud-browser file navigation is restricted, so visual capture of this file was not completed in that environment.
