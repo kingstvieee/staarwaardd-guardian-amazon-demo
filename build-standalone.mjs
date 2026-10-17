@@ -20,7 +20,7 @@ let bundled = html.replace('<link rel="stylesheet" href="/amazon-judge.css">', '
   .replace('<section id="status"', '<p class="status">Offline source preview: the same planner and handler run inside this browser. No backend, AWS, AI model or Alexa connection is used.</p>\n<section id="status"')
   .replace('<script src="/amazon-judge.js" defer></script>', '<script>'+script.replaceAll('</script', '<\\/script')+'</script>');
 const artwork = {};
-for (const name of ['cover', 'worlds', 'denim-study']) {
+for (const name of ['cover', 'worlds']) {
   const bytes = await readFile(new URL('public/assets/'+name+'.webp', import.meta.url));
   artwork[name] = 'data:image/webp;base64,'+bytes.toString('base64');
   bundled = bundled.replaceAll('src="/assets/'+name+'.webp"', 'data-art="'+name+'"');
@@ -31,4 +31,3 @@ bundled = bundled.replace('<script>', '<script>'+imageBootstrap);
 await mkdir(new URL('dist/', import.meta.url), {recursive:true});
 await writeFile(new URL('dist/guardian-demo.html', import.meta.url), bundled);
 console.log('Built dist/guardian-demo.html from canonical source. Open the file directly in a browser.');
-
