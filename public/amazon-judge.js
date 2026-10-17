@@ -28,9 +28,9 @@ function render(data) {
   $('#decision').textContent = coordination.decision || 'Prepared actions only; approval required for external changes.';
 
   $('#techProof').textContent = `${data.architecture?.interface || 'Web simulation'} → ${data.architecture?.protocol || 'HTTPS JSON'} → ${data.architecture?.orchestrator || 'Guardian'}. This source export makes no AWS calls.`;
-  $('#designProof').textContent = 'One request produces a briefing, portal trace, and approval state in a simulated scenario.';
+  $('#designProof').textContent = 'One request becomes a visible plan: selected domains, illustrative preparation steps and permission markers.';
   $('#impactProof').textContent = 'Illustrates fewer app handoffs; no real-world time saving or customer adoption is measured in this demo.';
-  $('#ideaProof').textContent = 'Guardian acts as a whole-life orchestration layer rather than a single-purpose chatbot.';
+  $('#ideaProof').textContent = 'STAARWAARDD explores one connected-life view, with Guardian preparing the relevant next steps and the human retaining authority.';
 
   $('#portals').innerHTML = domains.map((domain, index) => `
     <article class="portal-card">
@@ -61,7 +61,7 @@ function render(data) {
     ['User requests', metrics.userRequests ?? 1],
     ['Relevant portals', metrics.portalsActivated ?? domains.length],
     ['Cross-portal exchanges', metrics.crossPortalExchanges ?? (coordination.exchanges || []).length],
-    ['External actions without approval', metrics.externalActionsExecuted ?? 0]
+    ['External actions executed', metrics.externalActionsExecuted ?? 0]
   ].map(([label, value]) => `<div><b>${esc(String(value))}</b><span>${esc(label)}</span></div>`).join('');
 
   $('#standby').hidden = true;
