@@ -76,3 +76,11 @@ function esc(value) {
 $('#runJudge').addEventListener('click', () => run('judge'));
 $('#runCustom').addEventListener('click', () => run('plan'));
 
+
+
+const verseMotion = $('#verseMotion');
+verseMotion?.addEventListener('click', () => {
+  const paused = $('#staarverse').classList.toggle('motion-paused');
+  verseMotion.setAttribute('aria-pressed', String(paused));
+  verseMotion.textContent = paused ? 'RESUME PORTAL MOTION' : 'PAUSE PORTAL MOTION';
+});
