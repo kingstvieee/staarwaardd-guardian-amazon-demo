@@ -1,6 +1,7 @@
 import http from 'node:http';
 import { readFile } from 'node:fs/promises';
 import handler from './api/amazon-guardian.mjs';
+import mcpHandler from './api/mcp.mjs';
 
 const assets = {
   '/': ['amazon-judge.html', 'text/html'],
@@ -17,7 +18,7 @@ const port = Number(process.env.PORT || 3335);
 http.createServer(async (req, res) => {
   try {
     const path = new URL(req.url, 'http://localhost').pathname;
-    if (path === '/api/amazon-guardian') {
+    if (path === '/api/amazon-guardian' || path === '/api/mcp') {
       // Demo-only runner serves free simulation modes; no AWS adapter is included.
       let raw = '';
       for await (const chunk of req) {
@@ -25,13 +26,14 @@ http.createServer(async (req, res) => {
         if (raw.length > 16384) { res.writeHead(413); return res.end(); }
       }
       let body;
+      if (path === '/api/mcp') return await mcpHandler({method:req.method, headers:req.headers, body:raw || '{}'}, res);
       try { body = raw ? JSON.parse(raw) : {}; }
       catch { res.writeHead(400); return res.end('Invalid JSON'); }
       if (!body || typeof body !== 'object' || Array.isArray(body)) { res.writeHead(400); return res.end('Expected a JSON object'); }
       if (body.mode === 'bedrock') { res.writeHead(400); return res.end('AWS is not included in this demo-only source export'); }
       res.status = code => { res.statusCode = code; return res; };
       res.json = value => { res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify(value)); return res; };
-      return await handler({method:req.method, body}, res);
+      return await (path === '/api/mcp' ? mcpHandler : handler)({method:req.method, headers:req.headers, body}, res);
     }
     const asset = Object.hasOwn(assets, path) ? assets[path] : null;
     if (req.method !== 'GET' || !asset) { res.writeHead(404); return res.end(); }

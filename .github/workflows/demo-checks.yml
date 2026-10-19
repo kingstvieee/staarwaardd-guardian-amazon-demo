@@ -14,14 +14,23 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Install test client
+        run: npm ci --ignore-scripts
       - name: Check JavaScript syntax
         run: |
           node --check public/amazon-judge.js
           node --check server.mjs
           node --check api/amazon-guardian.mjs
+          node --check api/mcp.mjs
           node --check src/guardian-core.mjs
           node --check build-standalone.mjs
       - name: Test planner and approval boundaries
         run: npm test
       - name: Build standalone demo
         run: node build-standalone.mjs
+      - name: Save current offline source preview
+        uses: actions/upload-artifact@v4
+        with:
+          name: guardian-offline-source-preview
+          path: dist/guardian-demo.html
+          retention-days: 30

@@ -34,7 +34,7 @@ for (const name of [...Array.from({length:10}, (_,i)=>'voice-'+String(i+1).padSt
   bundled = bundled.replaceAll('src="'+path+'"', 'data-audio="'+path+'"');
 }
 const audioBootstrap = 'window.demoTourAudio='+JSON.stringify(tourAudio)+';document.querySelectorAll("[data-audio]").forEach(el=>el.src=window.demoTourAudio[el.dataset.audio]);';
-const imageBootstrap = 'const demoArtwork='+JSON.stringify(artwork)+';document.querySelectorAll("[data-art]").forEach(el=>el.src=demoArtwork[el.dataset.art]);for(const [name,url] of Object.entries(demoArtwork))document.documentElement.style.setProperty("--"+name+"-art", "url("+url+")");';
+const imageBootstrap = 'window.demoOffline=true;document.getElementById("connectMcp").disabled=true;document.getElementById("mcpStatus").textContent="OFFLINE SOURCE PREVIEW / Open the hosted demo for real MCP calls";const demoArtwork='+JSON.stringify(artwork)+';document.querySelectorAll("[data-art]").forEach(el=>el.src=demoArtwork[el.dataset.art]);for(const [name,url] of Object.entries(demoArtwork))document.documentElement.style.setProperty("--"+name+"-art", "url("+url+")");';
 bundled = bundled.replace('<script>', '<script>'+imageBootstrap+audioBootstrap);
 await mkdir(new URL('dist/', import.meta.url), {recursive:true});
 await writeFile(new URL('dist/guardian-demo.html', import.meta.url), bundled);

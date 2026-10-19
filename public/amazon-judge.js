@@ -1,18 +1,83 @@
 const $ = (s) => document.querySelector(s);
 
+let mcpConnection;
+let mcpId = 0;
+const mcpVersion = '2025-11-25';
+function protocolLine(text) {
+  const entry = document.createElement('li'); entry.textContent = text;
+  $('#mcpTrace')?.append(entry);
+  while ($('#mcpTrace')?.children.length > 7) $('#mcpTrace').children[3].remove();
+}
+async function mcpRpc(method, params, notification = false) {
+  const id = notification ? undefined : ++mcpId;
+  const response = await fetch('/api/mcp', {
+    method:'POST',
+    headers:{'Content-Type':'application/json','Accept':'application/json, text/event-stream', ...(method === 'initialize' ? {} : {'MCP-Protocol-Version':mcpVersion})},
+    body:JSON.stringify({jsonrpc:'2.0', ...(notification ? {} : {id}), method, params}),
+    signal:AbortSignal.timeout(15000)
+  });
+  if (!response.ok) throw new Error(`MCP ${method} failed (HTTP ${response.status})`);
+  if (notification) {if (response.status !== 202) throw new Error('MCP notification was not accepted'); return;}
+  let message;
+  if (response.headers.get('content-type')?.includes('text/event-stream')) {
+    const reader = response.body.getReader(), decoder = new TextDecoder(); let buffer = '';
+    try {
+      while (!message) {
+        const {value,done} = await reader.read();
+        buffer += decoder.decode(value, {stream:!done}).replaceAll('\r\n','\n');
+        let boundary;
+        while ((boundary = buffer.indexOf('\n\n')) >= 0) {
+          const block = buffer.slice(0,boundary); buffer = buffer.slice(boundary+2);
+          const data = block.split('\n').filter(line=>line.startsWith('data:')).map(line=>line.slice(5).trimStart()).join('\n');
+          if (data) {const candidate = JSON.parse(data); if (candidate.id === id) message = candidate;}
+        }
+        if (done) break;
+      }
+    } finally {await reader.cancel();}
+  } else message = await response.json();
+  if (!message || message.jsonrpc !== '2.0' || message.id !== id) throw new Error('MCP response did not match the request');
+  if (message.error) throw new Error(message.error.message);
+  return message.result;
+}
+async function connectMcp() {
+  if (window.demoOffline) throw new Error('This downloaded preview runs locally. Open the hosted demo for a real MCP connection.');
+  if (!mcpConnection) mcpConnection = (async()=>{
+    $('#mcpStatus').textContent = 'Connecting Guardian MCP…';
+    const initialized = await mcpRpc('initialize', {protocolVersion:mcpVersion, capabilities:{}, clientInfo:{name:'staarwaardd-web-demo',version:'1.1.0'}});
+    if (initialized.protocolVersion !== mcpVersion) throw new Error('Unsupported server protocol');
+    protocolLine(`initialize → ${initialized.serverInfo.name} / ${initialized.protocolVersion}`);
+    await mcpRpc('notifications/initialized', {}, true);
+    protocolLine('notifications/initialized → HTTP 202 accepted');
+    const listed = await mcpRpc('tools/list', {});
+    if (!listed.tools?.some(tool=>tool.name === 'staarwardd_plan')) throw new Error('Guardian planning tool is unavailable');
+    protocolLine('tools/list → staarwardd_plan discovered');
+    $('#mcpStatus').textContent = 'MCP CONNECTED · GUARDIAN TOOL AVAILABLE';
+    return listed;
+  })().catch(error=>{mcpConnection=undefined; $('#mcpStatus').textContent=error.message; throw error;});
+  return mcpConnection;
+}
+async function guardianRequest(mode, input) {
+  // The downloadable source preview is explicitly local; the hosted UI uses MCP.
+  if (window.demoOffline) {
+    const response = await fetch('/api/amazon-guardian', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode,input})});
+    const data = await response.json(); if (!response.ok) throw new Error(data.error || 'Preview failed'); return data;
+  }
+  await connectMcp();
+  protocolLine(`tools/call → staarwardd_plan (${mode})`);
+  const result = await mcpRpc('tools/call', {name:'staarwardd_plan', arguments:{request:input, mode}});
+  if (result.isError || !result.structuredContent?.ok) throw new Error('Guardian MCP could not prepare a plan');
+  protocolLine(`tools/call ✓ ${result.structuredContent.metrics.portalsActivated} domains / ${result.structuredContent.metrics.externalActionsExecuted} external actions`);
+  return result.structuredContent;
+}
+$('#connectMcp')?.addEventListener('click', ()=>connectMcp().catch(error=>{$('#status').textContent=error.message;}));
+
 async function run(mode) {
   const status = $('#status');
   const result = $('#result');
   status.textContent = 'Guardian is coordinating across the relevant portals…';
   result.hidden = true;
   try {
-    const response = await fetch('/api/amazon-guardian', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({mode, input: $('#request').value})
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error || 'Judge scenario failed');
+    const data = await guardianRequest(mode, $('#request').value);
     render(data);
     status.textContent = 'Guardian coordination complete. Sensitive actions remain approval-gated.';
     return data;
@@ -99,9 +164,10 @@ const tourChapters = [
     "text": "Here’s the world atlas. Work handles priorities. Creativity covers ideas and launches. Home covers arrival. Wellbeing makes room to reset. Relationships keeps commitments in view. Community brings in connection. Style makes room for expression. Star Verse opens the game-world preview. These visuals show the vision, not connected services."
   },
   {
-    "title": "Your request, visible steps",
+    "title": "How Guardian connects through MCP",
     "target": "studio",
-    "text": "Now, the working studio. Type a request on the left, then run Guardian. Results appear on the right. This demo uses keyword routing through a JSON API. It doesn’t connect to Alexa, AWS, your accounts, or devices. Let’s try it."
+    "action": "integration",
+    "text": "Here’s the connection. The web client initializes Guardian’s M C P server, discovers the Star Ward plan tool, and sends your request. The server returns the plan on screen. The trace shows those real calls. This is an Alexa Plus track demonstration through a web client; device access depends on Amazon’s preview tools."
   },
   {
     "title": "Prepare meeting notes",
@@ -182,6 +248,7 @@ const tourChapters = [
     }
   }
   async function go(next, autoplay = true) {
+    if (window.demoOffline && next === 2) next = next > index ? 3 : 1;
     if (preparing || next < 0 || next >= tourChapters.length) return;
     const stamp = ++sequence;
     index = next; active = true; preparing = true;
@@ -195,7 +262,11 @@ const tourChapters = [
     $('#tourProgress').value = 0;
     $('#tourState').textContent = 'Preparing this step…';
     try {
-      if (chapter.action === 'notes') {
+      if (chapter.action === 'integration') {
+        await connectMcp();
+        $('#request').value = 'Prepare my meeting notes';
+        const result = await run('plan'); if (!result) throw new Error('The MCP tool call could not load. Try this step again.');
+      } else if (chapter.action === 'notes') {
         $('#request').value = 'Prepare my meeting notes';
         const result = await run('plan'); if (!result) throw new Error('The meeting-notes preview could not load. Try this step again.');
       } else if (chapter.action === 'approval') {
