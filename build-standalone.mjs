@@ -26,8 +26,17 @@ for (const name of ['cover', 'worlds']) {
   bundled = bundled.replaceAll('src="/assets/'+name+'.webp"', 'data-art="'+name+'"');
   bundled = bundled.replaceAll("url('/assets/"+name+".webp')", 'var(--'+name+'-art)');
 }
+const tourAudio = {};
+for (const name of [...Array.from({length:10}, (_,i)=>'voice-'+String(i+1).padStart(2,'0')), 'instrumental']) {
+  const path = '/audio/'+name+'.mp3';
+  const bytes = await readFile(new URL('public'+path, import.meta.url));
+  tourAudio[path] = 'data:audio/mpeg;base64,'+bytes.toString('base64');
+  bundled = bundled.replaceAll('src="'+path+'"', 'data-audio="'+path+'"');
+}
+const audioBootstrap = 'window.demoTourAudio='+JSON.stringify(tourAudio)+';document.querySelectorAll("[data-audio]").forEach(el=>el.src=window.demoTourAudio[el.dataset.audio]);';
 const imageBootstrap = 'const demoArtwork='+JSON.stringify(artwork)+';document.querySelectorAll("[data-art]").forEach(el=>el.src=demoArtwork[el.dataset.art]);for(const [name,url] of Object.entries(demoArtwork))document.documentElement.style.setProperty("--"+name+"-art", "url("+url+")");';
-bundled = bundled.replace('<script>', '<script>'+imageBootstrap);
+bundled = bundled.replace('<script>', '<script>'+imageBootstrap+audioBootstrap);
 await mkdir(new URL('dist/', import.meta.url), {recursive:true});
 await writeFile(new URL('dist/guardian-demo.html', import.meta.url), bundled);
 console.log('Built dist/guardian-demo.html from canonical source. Open the file directly in a browser.');
+

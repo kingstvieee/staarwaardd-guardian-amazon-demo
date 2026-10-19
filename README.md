@@ -55,3 +55,12 @@ Use this repository for the existing Devpost project **1191047 — STAARWAARDD G
 ## The Guardian Issue — editorial demo
 
 The judge runner now presents five magazine spreads: a futuristic Toronto cover, seven-domain world atlas, functioning request studio, human-control explanation, and source showcase. The generated architecture imagery illustrates product vision; it does not depict live integrations, devices, customers, or shipped services. The two original AI-generated demo illustrations in `public/assets` are included in this demo export. The broader application's proprietary assets and implementation remain excluded. Typography uses optional Google Fonts with system fallbacks. The standalone build embeds its imagery and removes that font request.
+
+
+## Guided audio tour
+
+Choose **TAKE THE GUIDED TOUR** on the cover. Ten recorded AI-narration chapters explain the eight visual portals, request input, meeting notes, approval gating, full judge scenario, coordination trace and metrics, human-control boundary, STAARVERSE in-development preview and source access. The tour runs the real JSON simulation handler before narrating each result. The game preview does not add a game-planning domain or imply a playable integration.
+
+The original instrumental is kept beneath the speech. Sound starts only after a deliberate click. Pause/resume, previous/next, replay, music toggle, voice level, captions and Escape-to-close are available; backgrounding the tab pauses playback. Audio failures leave the transcript visible. The standalone bundle embeds the same eleven MP3 assets and invokes the same handler locally.
+
+Voice: original generated preset narration (not a human recording or celebrity imitation). Music: original generated instrumental. The audio is part of this demo-only export. No broader proprietary application assets are included.

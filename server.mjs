@@ -10,6 +10,9 @@ const assets = {
   '/assets/cover.webp': ['assets/cover.webp', 'image/webp'],
   '/assets/worlds.webp': ['assets/worlds.webp', 'image/webp']
 };
+for (const name of [...Array.from({length:10}, (_,i)=>'voice-'+String(i+1).padStart(2,'0')), 'instrumental']) {
+  assets['/audio/'+name+'.mp3'] = ['audio/'+name+'.mp3', 'audio/mpeg'];
+}
 const port = Number(process.env.PORT || 3335);
 http.createServer(async (req, res) => {
   try {
@@ -40,4 +43,5 @@ http.createServer(async (req, res) => {
     res.end('Local judge runner failed');
   }
 }).listen(port, '127.0.0.1', () => console.log('Guardian simulation: http://127.0.0.1:' + port));
+
 
