@@ -233,12 +233,15 @@ const tourChapters = [
 (() => {
   const voice = $('#tourVoice'), bed = $('#tourBed'), player = $('#tourPlayer');
   let index = 0, active = false, preparing = false, sequence = 0, musicOn = true;
+  // Reuse existing audio: a complete judge path under three minutes including flight.
+  const route = window.demoOffline ? [0,4,5,6,9] : [0,2,4,5,6,9];
+  const adjacent = delta => route[route.indexOf(index) + delta];
   const judgeInput = 'Guardian, my investor pitch is running late. Prepare my launch, fitting, anniversary dinner, gift delivery, wellbeing reset and home arrival. Draft a message about the dinner but do not send it.';
   const audioSource = path => window.demoTourAudio?.[path] || path;
   bed.volume = 0.7;
   function controls() {
-    $('#tourPrev').disabled = preparing || index === 0;
-    $('#tourNext').disabled = preparing || index === tourChapters.length - 1;
+    $('#tourPrev').disabled = preparing || index === route[0];
+    $('#tourNext').disabled = preparing || index === route.at(-1);
     $('#tourReplay').disabled = preparing;
     $('#tourPlay').disabled = preparing;
   }
@@ -267,15 +270,14 @@ const tourChapters = [
     }
   }
   async function go(next, autoplay = true) {
-    if (window.demoOffline && next === 2) next = next > index ? 3 : 1;
-    if (preparing || next < 0 || next >= tourChapters.length) return;
+    if (preparing || next === undefined || next < 0 || next >= tourChapters.length) return;
     const stamp = ++sequence;
     index = next; active = true; preparing = true;
     voice.pause(); bed.pause(); player.hidden = false;
     document.body.classList.add('tour-active');
     controls();
     const chapter = tourChapters[index];
-    $('#tourCounter').textContent = `${String(index + 1).padStart(2,'0')} / ${tourChapters.length}`;
+    $('#tourCounter').textContent = `${String(route.indexOf(index) + 1).padStart(2,'0')} / ${route.length}`;
     $('#tourTitle').textContent = chapter.title;
     $('#tourCaption').textContent = chapter.text;
     $('#tourProgress').value = 0;
@@ -317,10 +319,10 @@ const tourChapters = [
       $('#tourState').textContent = error.message;
     }
   }
-  window.guardianTour = {start:()=>go(0), next:()=>go(index+1), pause, resume:playAudio, stop};
+  window.guardianTour = {start:()=>go(0), next:()=>go(adjacent(1)), pause, resume:playAudio, stop};
   $('#startTour').addEventListener('click', () => window.guardianArrival());
-  $('#tourPrev').addEventListener('click', () => go(index - 1));
-  $('#tourNext').addEventListener('click', () => go(index + 1));
+  $('#tourPrev').addEventListener('click', () => go(adjacent(-1)));
+  $('#tourNext').addEventListener('click', () => go(adjacent(1)));
   $('#tourReplay').addEventListener('click', () => go(index));
   $('#tourClose').addEventListener('click', stop);
   $('#tourPlay').addEventListener('click', () => {
@@ -343,7 +345,7 @@ const tourChapters = [
   });
   voice.addEventListener('ended', () => {
     if (!active) return;
-    if (index < tourChapters.length - 1) go(index + 1);
+    if (index !== route.at(-1)) go(adjacent(1));
     else {bed.pause(); $('#tourPlay').textContent = 'REPLAY'; $('#tourState').textContent = 'Walkthrough complete. Explore a fresh request or inspect the source.';}
   });
   // Returning to a backgrounded tab never starts sound unexpectedly.
