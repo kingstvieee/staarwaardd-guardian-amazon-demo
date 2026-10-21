@@ -27,12 +27,24 @@ for (const name of ['cover', 'worlds']) {
   bundled = bundled.replaceAll("url('/assets/"+name+".webp')", 'var(--'+name+'-art)');
 }
 const tourAudio = {};
-for (const name of [...Array.from({length:10}, (_,i)=>'voice-'+String(i+1).padStart(2,'0')), 'instrumental']) {
+for (const name of [...Array.from({length:10}, (_,i)=>'voice-'+String(i+1).padStart(2,'0')), 'instrumental', 'guardian-welcome']) {
   const path = '/audio/'+name+'.mp3';
   const bytes = await readFile(new URL('public'+path, import.meta.url));
   tourAudio[path] = 'data:audio/mpeg;base64,'+bytes.toString('base64');
   bundled = bundled.replaceAll('src="'+path+'"', 'data-audio="'+path+'"');
 }
+// Embed the exact approved footage, including its chunked flight; no regeneration.
+const flight = JSON.parse(await read('public/assets/guardian-flight.json'));
+const flightBytes = Buffer.concat(await Promise.all(flight.parts.map(name => readFile(new URL('public/assets/'+name, import.meta.url)))));
+const {createHash} = await import('node:crypto');
+if (flightBytes.length !== flight.bytes || createHash('sha256').update(flightBytes).digest('hex') !== flight.sha256) throw new Error('Approved flight integrity mismatch');
+const media = {'/assets/guardian-arrival.mp4':'data:video/mp4;base64,'+flightBytes.toString('base64')};
+for (const name of ['guardian-center.mp4','guardian-poster.jpg']) {
+ const type = name.endsWith('mp4') ? 'video/mp4' : 'image/jpeg';
+ media['/assets/'+name] = 'data:'+type+';base64,'+(await readFile(new URL('public/assets/'+name,import.meta.url))).toString('base64');
+}
+for (const [path,url] of Object.entries(media)) bundled = bundled.replaceAll(path,url);
+bundled = bundled.replace('Alexa+ simulation powered by Guardian’s live MCP server.', 'OFFLINE PREVIEW: local preparation only. Open the hosted demo to test the MCP server.');
 const audioBootstrap = 'window.demoTourAudio='+JSON.stringify(tourAudio)+';document.querySelectorAll("[data-audio]").forEach(el=>el.src=window.demoTourAudio[el.dataset.audio]);';
 const imageBootstrap = 'window.demoOffline=true;document.getElementById("connectMcp").disabled=true;document.getElementById("mcpStatus").textContent="OFFLINE SOURCE PREVIEW / Open the hosted demo for real MCP calls";const demoArtwork='+JSON.stringify(artwork)+';document.querySelectorAll("[data-art]").forEach(el=>el.src=demoArtwork[el.dataset.art]);for(const [name,url] of Object.entries(demoArtwork))document.documentElement.style.setProperty("--"+name+"-art", "url("+url+")");';
 bundled = bundled.replace('<script>', '<script>'+imageBootstrap+audioBootstrap);

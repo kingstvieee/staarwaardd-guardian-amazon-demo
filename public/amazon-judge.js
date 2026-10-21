@@ -71,29 +71,45 @@ async function guardianRequest(mode, input) {
 }
 $('#connectMcp')?.addEventListener('click', ()=>connectMcp().catch(error=>{$('#status').textContent=error.message;}));
 
+let requestRunning = false;
 async function run(mode) {
+  if (requestRunning) return;
+  const input = $('#request').value.trim();
+  if (!input || input.length > 2000) { $('#status').textContent = 'Enter a request of 1–2000 characters.'; $('#request').focus(); return; }
+  requestRunning = true;
+  const buttons = document.querySelectorAll('#runCustom,#runJudge,[data-scenario]');
+  buttons.forEach(button => button.disabled = true);
+  $('#result').setAttribute('aria-busy','true');
   const status = $('#status');
   const result = $('#result');
   window.guardianState?.('COORDINATING');
   status.textContent = 'Guardian is coordinating across the relevant portals…';
   result.hidden = true;
   try {
-    const data = await guardianRequest(mode, $('#request').value);
+    const data = await guardianRequest(mode, input);
     render(data);
     window.guardianState?.('PLAN READY · YOUR CALL');
-    status.textContent = 'Guardian coordination complete. Sensitive actions remain approval-gated.';
+    status.textContent = 'Plan ready. Review the steps and missing details. Nothing was executed.';
+    $('#result').focus({preventScroll:true});
     return data;
   } catch (error) {
     window.guardianState?.('READY TO RETRY');
-    status.textContent = error.message;
+    status.textContent = error.message + '. Your request is preserved; run it again to retry.';
+  } finally {
+    requestRunning = false; buttons.forEach(button => button.disabled = false);
+    $('#result').setAttribute('aria-busy','false');
   }
 }
+$('#request').addEventListener('keydown', event => { if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) { event.preventDefault(); run('plan'); } });
 
 function render(data) {
   const plan = data.plan || data;
   const coordination = plan.coordination || {};
   const domains = plan.domains || [];
   $('#summary').textContent = plan.summary || 'Guardian coordinated the request.';
+  $('#requestEcho').textContent = 'YOUR REQUEST: ' + (data.raw?.request || $('#request').value);
+  $('#dependency').textContent = plan.dependency || '';
+  $('#questions').replaceChildren(...(plan.questions || []).map(text => {const li=document.createElement('li');li.textContent=text;return li;}));
   $('#decision').textContent = coordination.decision || 'Prepared actions only; approval required for external changes.';
 
   $('#techProof').textContent = `${data.architecture?.interface || 'Web simulation'} → ${data.architecture?.protocol || 'HTTPS JSON'} → ${data.architecture?.orchestrator || 'Guardian'}. This source export makes no AWS calls.`;
@@ -129,7 +145,7 @@ function render(data) {
   $('#metrics').innerHTML = [
     ['User requests', metrics.userRequests ?? 1],
     ['Relevant portals', metrics.portalsActivated ?? domains.length],
-    ['Cross-portal exchanges', metrics.crossPortalExchanges ?? (coordination.exchanges || []).length],
+    ['Illustrative links', metrics.crossPortalExchanges ?? (coordination.exchanges || []).length],
     ['External actions executed', metrics.externalActionsExecuted ?? 0]
   ].map(([label, value]) => `<div><b>${esc(String(value))}</b><span>${esc(label)}</span></div>`).join('');
 
@@ -355,31 +371,36 @@ const tourChapters = [
   if(blob.size!==manifest.bytes)throw new Error('Flight incomplete');
   const digest=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',await blob.arrayBuffer()))).map(b=>b.toString(16).padStart(2,'0')).join('');
   if(digest!==manifest.sha256)throw new Error('Flight integrity check failed');
-  startup.src=URL.createObjectURL(blob);if(!entrance.hidden)startup.play().catch(()=>{});
+  startup.src=URL.createObjectURL(blob);// Wait for the judge to select a path before playback.
  })().catch(()=>{$('#arrivalStatus').textContent='The flight could not load. Use SKIP FLIGHT to continue.';});
 
  window.guardianState=text=>{$('#presenceState').textContent=text;};
  const content=()=>document.querySelectorAll('main,.mastnav');
  function lock(value){content().forEach(el=>el.inert=value);document.body.classList.toggle('guardian-onboarding',value);}
  function quiet(){greeting.pause();bed.pause();window.guardianTour.pause();}
- function showPage(){entrance.hidden=true;hub.hidden=true;presence.hidden=false;lock(false);greeting.pause();startup.pause();}
- function showMenu(){recognition?.stop();quiet();showPage();menu.hidden=false;menu.querySelector('button').focus();}
+ function showPage(){entrance.hidden=true;hub.hidden=true;presence.hidden=false;presence.inert=false;lock(false);greeting.pause();startup.pause();}
+ function closeMenu(){menu.hidden=true;content().forEach(el=>el.inert=false);presence.inert=false;$('#guardianMenu').focus();}
+ function showMenu(){recognition?.stop();quiet();showPage();menu.hidden=false;content().forEach(el=>el.inert=true);presence.inert=true;menu.querySelector('button').focus();}
  function welcome(){
   if(finished)return;finished=true;startup.pause();entrance.hidden=true;
   if(mode==='auto'){showPage();window.guardianTour.start();return;}
-  hub.hidden=false;lock(true);$('#hubSpeak').focus();
+  hub.hidden=false;lock(true);$('#hubType').focus();
   if(sound){bed.pause();greeting.play().catch(()=>{$('#hubStatus').textContent='Choose HEAR GUARDIAN’S WELCOME to start the greeting.';});}
  }
- function launch(next){mode=next;sound=true;finished=false;hub.hidden=true;entrance.hidden=false;lock(true);flightReady.then(()=>{if(entrance.hidden)return;startup.currentTime=0;startup.play().catch(()=>{$('#arrivalStatus').textContent='Use SKIP FLIGHT to continue.';});});bed.play().catch(()=>{});$('#arrivalChoices').hidden=true;$('#arrivalExplanation').textContent=next==='auto'?'Guardian arrives, then the automatic walkthrough begins. No next-button clicking needed.':'Guardian arrives, then asks how you want to interact.';$('#arrivalStatus').textContent='ARRIVING OVER TORONTO · Your experience continues automatically.';}
+ function launch(next){mode=next;sound=true;finished=false;startup.pause();hub.hidden=true;entrance.hidden=false;lock(true);flightReady.then(()=>{if(entrance.hidden)return;startup.currentTime=0;startup.play().catch(()=>{$('#arrivalStatus').textContent='Use SKIP FLIGHT to continue.';});});bed.play().catch(()=>{});$('#arrivalChoices').hidden=true;$('#resumeFlight').hidden=false;$('#arrivalExplanation').textContent=next==='auto'?'Guardian arrives, then the automatic walkthrough begins. No next-button clicking needed.':'Guardian arrives, then asks how you want to interact.';$('#arrivalStatus').textContent='ARRIVING OVER TORONTO · Your experience continues automatically.';}
  window.guardianArrival=()=>{quiet();presence.hidden=true;launch('meet');};
+ const resumeFlight=document.createElement('button');resumeFlight.id='resumeFlight';resumeFlight.textContent='RESUME / PAUSE FLIGHT';resumeFlight.hidden=true;$('#arrivalSkip').before(resumeFlight);resumeFlight.addEventListener('click',()=>{if(startup.paused)startup.play().catch(()=>{$('#arrivalStatus').textContent='Flight could not resume. Skip to continue.';});else startup.pause();});
  $('#arrivalAuto').addEventListener('click',()=>launch('auto'));
  $('#arrivalSound').addEventListener('click',()=>launch('meet'));
  $('#arrivalSkip').addEventListener('click',()=>{sound=true;welcome();});
- startup.addEventListener('ended',welcome);
+ startup.addEventListener('ended',()=>{if(mode!=='choose')welcome();});
  startup.addEventListener('error',()=>{$('#arrivalStatus').textContent='The flight could not load. Use SKIP FLIGHT to continue.';});
  $('#hubAuto').addEventListener('click',()=>{showPage();window.guardianTour.start();});
  $('#hubMenu').addEventListener('click',showMenu);$('#guardianMenu').addEventListener('click',showMenu);
- $('#menuClose').addEventListener('click',()=>{menu.hidden=true;talk.focus();});
+ $('#menuClose').addEventListener('click',closeMenu);
+ function typeRequest(){recognition?.stop();quiet();menu.hidden=true;presence.inert=false;showPage();$('#studio').scrollIntoView({behavior:'auto'});$('#request').focus();}
+ $('#hubType').addEventListener('click',typeRequest);$('#typeGuardian').addEventListener('click',typeRequest);
+ $('#motionGuardian').addEventListener('click',()=>{const paused=$('#motionGuardian').getAttribute('aria-pressed')!=='true';document.querySelectorAll('.guardian-hub video,.guardian-presence video').forEach(video=>paused?video.pause():video.play().catch(()=>{}));$('#motionGuardian').setAttribute('aria-pressed',String(paused));$('#motionGuardian').textContent=paused?'RESUME GUARDIAN MOTION':'PAUSE GUARDIAN MOTION';});
  $('#watchGuardian').addEventListener('click',()=>{recognition?.stop();menu.hidden=true;greeting.pause();window.guardianTour.start();});
  $('#replayGreeting').addEventListener('click',()=>{greeting.currentTime=0;greeting.play().catch(()=>{$('#hubStatus').textContent='Audio is unavailable. The same welcome is written above.';});});
  greeting.addEventListener('error',()=>{$('#hubStatus').textContent='Would you like to speak with Guardian, choose from the menu, or watch the automatic demo?';});
@@ -387,8 +408,12 @@ const tourChapters = [
  $('#menuGame').addEventListener('click',()=>{menu.hidden=true;showPage();$('#staarverse').scrollIntoView({behavior:'smooth'});});
  $('#tourVoice').addEventListener('play',()=>window.guardianState('GUIDING YOU'));
  $('#tourVoice').addEventListener('pause',()=>window.guardianState('HERE WITH YOU'));
- document.addEventListener('visibilitychange',()=>{if(document.hidden){startup.pause();greeting.pause();bed.pause();recognition?.stop();}else if(!entrance.hidden)startup.play().catch(()=>{});});
- document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!entrance.hidden)welcome();else if(!hub.hidden){showPage();showMenu();}menu.hidden=true;recognition?.stop();}});
+ document.addEventListener('visibilitychange',()=>{if(document.hidden){startup.pause();greeting.pause();bed.pause();recognition?.stop();}else if(!entrance.hidden && mode!=='choose')$('#arrivalStatus').textContent='Flight paused. Choose RESUME / PAUSE FLIGHT to continue.';});
+ document.addEventListener('keydown',e=>{
+  const modal = !entrance.hidden ? entrance : !hub.hidden ? hub : !menu.hidden ? menu : null;
+  if(e.key==='Tab' && modal){const items=[...modal.querySelectorAll('button,a,textarea')].filter(el=>!el.disabled && el.getClientRects().length);const first=items[0],last=items.at(-1);if(e.shiftKey && (document.activeElement===first || !modal.contains(document.activeElement))){e.preventDefault();last?.focus();}else if(!e.shiftKey && (document.activeElement===last || !modal.contains(document.activeElement))){e.preventDefault();first?.focus();}}
+  if(e.key==='Escape'){recognition?.stop();if(!entrance.hidden)welcome();else if(!hub.hidden)showMenu();else if(!menu.hidden)closeMenu();}
+ });
  let recognition;
  const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition;
  function startVoice(){

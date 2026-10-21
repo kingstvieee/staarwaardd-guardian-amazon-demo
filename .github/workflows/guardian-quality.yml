@@ -21,6 +21,6 @@ jobs:
       - name: Test Guardian safety and MCP protocol
         run: npm test
       - name: Build offline judge artifact
-        run: npm run build
+        run: npm run test:media
       - name: Check generated judge artifact
         run: test -s dist/guardian-demo.html
