@@ -24,7 +24,14 @@ export default async function handler(request, response) {
   const input = String(body.input || 'Guardian, get me ready for tomorrow').slice(0, 2000);
 
   if (body.mode === 'bedrock') {
-    return response.status(400).json({ok:false, error:'AWS is not included in this demo-only source export.'});
+    try {
+      const { invokeGuardianBedrock } = await import('./bedrock-adapter.mjs');
+      const result = await invokeGuardianBedrock(input);
+      return response.status(200).json(result);
+    } catch (error) {
+      const unavailable = error.message === 'BEDROCK_NOT_CONFIGURED';
+      return response.status(unavailable ? 503 : 502).json({ok:false, verifiedExecution:false, error:unavailable ? 'Bedrock credentials, region or model are not configured' : 'Bedrock invocation failed'});
+    }
   }
 
   const mode = body.mode === 'judge' ? 'judge' : 'plan';
