@@ -10,7 +10,7 @@ export default async function handler(request, response) {
       track: 'Alexa+ simulated experience',
       miniChallenge: 'None claimed',
       mode: 'competition-judge-api',
-      awsRuntime: 'Not included in this demo-only export',
+      awsRuntime: 'Optional server-side Bedrock adapter; not used by the MCP judge path',
       
       portals: ['Creativity','Work','Home','Wellbeing','Relationships','Community','Style']
     });
@@ -20,8 +20,11 @@ export default async function handler(request, response) {
     return response.status(405).json({ error: 'Method not allowed' });
   }
 
-  const body = request.body || {};
-  const input = String(body.input || 'Guardian, get me ready for tomorrow').slice(0, 2000);
+  const body = request.body;
+  if (!body || typeof body !== 'object' || Array.isArray(body) || typeof body.input !== 'string' || !body.input.trim() || body.input.length > 2000 || (body.mode !== undefined && !['plan','judge','bedrock'].includes(body.mode))) {
+    return response.status(400).json({ok:false, error:'Enter a request of 1–2000 characters and a supported mode.'});
+  }
+  const input = body.input.trim();
 
   if (body.mode === 'bedrock') {
     try {
@@ -47,7 +50,7 @@ export default async function handler(request, response) {
   }));
   const tasks = steps.map((step, index) => ({
     domain: step.portal,
-    title: step.capability.replaceAll('_', ' '),
+    title: step.title || step.capability.replaceAll('_', ' '),
     detail: step.summary,
     time: index < 2 ? 'Now' : 'Today',
     sensitive: Boolean(step.externalAction),
@@ -57,13 +60,15 @@ export default async function handler(request, response) {
   const plan = {
     summary: raw.outcome,
     domains,
+    questions: raw.questions,
+    dependency: raw.dependency,
     coordination: {
       detected: raw.request,
       agents: domains,
       exchanges,
       decision: raw.approvalRequired
-        ? 'Guardian prepared the work and stopped before any external action. Explicit approval is required.'
-        : 'Guardian coordinated the relevant portals with no external side effects.'
+        ? 'Review required. This demo cannot send, publish, book, buy or control a device, even after review.'
+        : 'Preparation only. Review the suggested steps and supply the missing details.'
     },
     now: tasks.slice(0, Math.min(3, tasks.length)),
     today: tasks.slice(Math.min(3, tasks.length)),
@@ -85,7 +90,6 @@ export default async function handler(request, response) {
     metrics: {
       userRequests: raw.metrics?.userRequestsRequired ?? 1,
       portalsActivated: raw.metrics?.portalsCoordinated ?? domains.length,
-      disconnectedAppsReplaced: raw.metrics?.disconnectedAppsReplaced ?? Math.max(1, domains.length - 1),
       crossPortalExchanges: exchanges.length,
       approvalsRequired,
       externalActionsExecuted: raw.metrics?.unsafeAutomaticActions ?? 0

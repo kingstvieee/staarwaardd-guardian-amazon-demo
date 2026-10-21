@@ -27,7 +27,7 @@ jobs:
       - name: Test planner and approval boundaries
         run: npm test
       - name: Build standalone demo
-        run: node build-standalone.mjs
+        run: npm run test:media
       - name: Save current offline source preview
         uses: actions/upload-artifact@v4
         with:

@@ -1,5 +1,5 @@
 import http from 'node:http';
-import { readFile } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 import handler from './api/amazon-guardian.mjs';
 import mcpHandler from './api/mcp.mjs';
 
@@ -13,6 +13,13 @@ const assets = {
 };
 for (const name of [...Array.from({length:10}, (_,i)=>'voice-'+String(i+1).padStart(2,'0')), 'instrumental']) {
   assets['/audio/'+name+'.mp3'] = ['audio/'+name+'.mp3', 'audio/mpeg'];
+}
+// Serve only existing, allowlisted public files, including the approved flight chunks.
+for (const dir of ['assets','audio']) {
+  for (const name of await readdir(new URL('./public/'+dir+'/', import.meta.url))) {
+    const type = {mp4:'video/mp4',mp3:'audio/mpeg',jpg:'image/jpeg',webp:'image/webp',json:'application/json',bin:'application/octet-stream'}[name.split('.').pop()];
+    if (type) assets['/'+dir+'/'+name] = [dir+'/'+name,type];
+  }
 }
 const port = Number(process.env.PORT || 3335);
 http.createServer(async (req, res) => {

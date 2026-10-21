@@ -10,7 +10,8 @@
   "scripts": {
     "test": "node test/smoke.mjs && node test/mcp.mjs",
     "start": "node server.mjs",
-    "build": "node build-standalone.mjs"
+    "build": "node build-standalone.mjs",
+    "test:media": "node build-standalone.mjs && node test/assets.mjs"
   },
   "devDependencies": {
     "@modelcontextprotocol/sdk": "1.32.1"

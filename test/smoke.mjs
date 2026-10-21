@@ -38,3 +38,24 @@ for (const mode of ['judge', 'plan']) {
   assert.ok([...payload.plan.now, ...payload.plan.today].every(task => task.sensitive));
 }
 console.log('Mixed-action approval and dependency-free API regression checks passed.');
+
+// Unknown requests ask for context instead of inventing domains. Word boundaries
+// prevent accidental matches such as 'homework' activating Home.
+assert.equal(buildGuardianPlan('hello there').state, 'needs_clarification');
+assert.deepEqual(buildGuardianPlan('homework').portals, []);
+const timed = buildGuardianPlan('My client meeting is late; prepare dinner at 7pm and my home arrival');
+assert.ok(timed.timing.includes('at 7pm'));
+assert.match(timed.dependency,/revised|finish time/);
+assert.ok(new Set(timed.steps.map(s=>s.summary)).size === timed.steps.length);
+assert.ok(timed.questions.length > 0);
+for (const input of ['Send my email','Delete my project','Pay for my outfit','Book my dinner','Turn off my home lights','Do not publish my campaign']) {
+  const guarded = buildGuardianPlan(input);
+  assert.equal(guarded.approvalRequired,true);
+  assert.ok(guarded.steps.every(step=>step.externalAction && step.status==='awaiting_approval'));
+}
+for (const body of [null,[],{input:''},{input:'a'.repeat(2001)},{input:'meeting',mode:'execute'}]) {
+ let status;
+ await handler({method:'POST',body},{setHeader(){},status(code){status=code;return this;},json(){return this;}});
+ assert.equal(status,400);
+}
+console.log('Timing, clarification, review boundaries and invalid-input checks passed.');
