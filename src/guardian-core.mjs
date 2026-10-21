@@ -43,7 +43,7 @@ export function buildGuardianPlan(request, context={}) {
     capability: preparations[portal][0].toLowerCase().replaceAll(' ','_'),
     title: preparations[portal][0],
     status: approvalRequired ? 'awaiting_approval' : 'prepared', externalAction: approvalRequired,
-    summary: preparations[portal][1] + (timing.length ? ` Timing mentioned: ${[...new Set(timing)].join(', ')}; not verified against a calendar.` : '')
+    summary: preparations[portal][1] + (timing.length ? ` Request mentions timing: ${[...new Set(timing)].join(', ')}; not verified against a calendar.` : '')
   }));
   return {
     request: input, mode:'guardian_preparation', portals, approvalRequired,

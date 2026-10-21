@@ -158,7 +158,7 @@ function esc(value) {
   return String(value ?? '').replace(/[&<>'"]/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
 }
 
-$('#runJudge').addEventListener('click', () => run('judge'));
+$('#runJudge').addEventListener('click', () => { $('#request').value='Guardian, my investor pitch is running late. Prepare my launch, fitting, anniversary dinner, gift delivery, wellbeing reset and home arrival. Draft a message about the dinner but do not send it.'; run('judge'); });
 $('#runCustom').addEventListener('click', () => run('plan'));
 
 
@@ -375,11 +375,12 @@ const tourChapters = [
  })().catch(()=>{$('#arrivalStatus').textContent='The flight could not load. Use SKIP FLIGHT to continue.';});
 
  window.guardianState=text=>{$('#presenceState').textContent=text;};
+ $('#toggleGuardian').addEventListener('click',()=>{const compact=presence.classList.toggle('compact');$('#toggleGuardian').setAttribute('aria-expanded',String(!compact));$('#toggleGuardian').textContent=compact?'OPEN GUARDIAN CONTROLS':'MINIMIZE GUARDIAN';});
  const content=()=>document.querySelectorAll('main,.mastnav');
  function lock(value){content().forEach(el=>el.inert=value);document.body.classList.toggle('guardian-onboarding',value);}
  function quiet(){greeting.pause();bed.pause();window.guardianTour.pause();}
- function showPage(){entrance.hidden=true;hub.hidden=true;presence.hidden=false;presence.inert=false;lock(false);greeting.pause();startup.pause();}
- function closeMenu(){menu.hidden=true;content().forEach(el=>el.inert=false);presence.inert=false;$('#guardianMenu').focus();}
+ function showPage(){entrance.hidden=true;hub.hidden=true;presence.hidden=false;presence.inert=false;presence.classList.add('compact');$('#toggleGuardian').setAttribute('aria-expanded','false');$('#toggleGuardian').textContent='OPEN GUARDIAN CONTROLS';lock(false);greeting.pause();startup.pause();}
+ function closeMenu(){menu.hidden=true;content().forEach(el=>el.inert=false);presence.inert=false;$('#toggleGuardian').focus();}
  function showMenu(){recognition?.stop();quiet();showPage();menu.hidden=false;content().forEach(el=>el.inert=true);presence.inert=true;menu.querySelector('button').focus();}
  function welcome(){
   if(finished)return;finished=true;startup.pause();entrance.hidden=true;
