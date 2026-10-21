@@ -1,0 +1,11 @@
+{
+  "framework": null,
+  "outputDirectory": "public",
+  "buildCommand": "",
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/amazon-judge.html"
+    }
+  ]
+}

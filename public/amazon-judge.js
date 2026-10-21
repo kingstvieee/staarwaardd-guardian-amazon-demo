@@ -74,14 +74,17 @@ $('#connectMcp')?.addEventListener('click', ()=>connectMcp().catch(error=>{$('#s
 async function run(mode) {
   const status = $('#status');
   const result = $('#result');
+  window.guardianState?.('COORDINATING');
   status.textContent = 'Guardian is coordinating across the relevant portals…';
   result.hidden = true;
   try {
     const data = await guardianRequest(mode, $('#request').value);
     render(data);
+    window.guardianState?.('PLAN READY · YOUR CALL');
     status.textContent = 'Guardian coordination complete. Sensitive actions remain approval-gated.';
     return data;
   } catch (error) {
+    window.guardianState?.('READY TO RETRY');
     status.textContent = error.message;
   }
 }
@@ -298,7 +301,8 @@ const tourChapters = [
       $('#tourState').textContent = error.message;
     }
   }
-  $('#startTour').addEventListener('click', () => go(0));
+  window.guardianTour = {start:()=>go(0), next:()=>go(index+1), pause, resume:playAudio, stop};
+  $('#startTour').addEventListener('click', () => window.guardianArrival());
   $('#tourPrev').addEventListener('click', () => go(index - 1));
   $('#tourNext').addEventListener('click', () => go(index + 1));
   $('#tourReplay').addEventListener('click', () => go(index));
@@ -331,4 +335,91 @@ const tourChapters = [
   document.addEventListener('keydown', event => {if (event.key === 'Escape' && active) stop();});
   document.querySelectorAll('.mastnav a,.hero-portals a,.finale-actions a').forEach(link => link.addEventListener('click', () => {if (active) stop();}));
   ['#runCustom','#runJudge'].forEach(selector => $(selector).addEventListener('click', () => {if(active) stop();}));
+})();
+
+
+// Arrival → one clear choice → automatic tour, voice session or scenario menu.
+(() => {
+ const entrance=$('#guardianEntrance'), startup=$('#guardianStartup'), hub=$('#guardianHub');
+ const bed=$('#tourBed'), greeting=$('#guardianGreeting'), presence=$('#guardianPresence'), menu=$('#scenarioMenu');
+ const talk=$('#talkGuardian'), message=$('#speechStatus');
+ let mode='choose', sound=false, finished=false, listening=false, busy=false;
+ // Preserve the approved MP4 bytes while distributing it in small static assets.
+ const flightReady=(async()=>{
+  if(!startup.dataset.arrival)return;
+  if(window.demoOffline){startup.src=startup.dataset.arrival;return;}
+  const response=await fetch('/assets/guardian-flight.json');if(!response.ok)throw new Error('Flight manifest unavailable');
+  const manifest=await response.json();
+  const pieces=await Promise.all(manifest.parts.map(async name=>{const r=await fetch('/assets/'+name);if(!r.ok)throw new Error('Flight part unavailable');return r.arrayBuffer();}));
+  const blob=new Blob(pieces,{type:'video/mp4'});
+  if(blob.size!==manifest.bytes)throw new Error('Flight incomplete');
+  const digest=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',await blob.arrayBuffer()))).map(b=>b.toString(16).padStart(2,'0')).join('');
+  if(digest!==manifest.sha256)throw new Error('Flight integrity check failed');
+  startup.src=URL.createObjectURL(blob);if(!entrance.hidden)startup.play().catch(()=>{});
+ })().catch(()=>{$('#arrivalStatus').textContent='The flight could not load. Use SKIP FLIGHT to continue.';});
+
+ window.guardianState=text=>{$('#presenceState').textContent=text;};
+ const content=()=>document.querySelectorAll('main,.mastnav');
+ function lock(value){content().forEach(el=>el.inert=value);document.body.classList.toggle('guardian-onboarding',value);}
+ function quiet(){greeting.pause();bed.pause();window.guardianTour.pause();}
+ function showPage(){entrance.hidden=true;hub.hidden=true;presence.hidden=false;lock(false);greeting.pause();startup.pause();}
+ function showMenu(){recognition?.stop();quiet();showPage();menu.hidden=false;menu.querySelector('button').focus();}
+ function welcome(){
+  if(finished)return;finished=true;startup.pause();entrance.hidden=true;
+  if(mode==='auto'){showPage();window.guardianTour.start();return;}
+  hub.hidden=false;lock(true);$('#hubSpeak').focus();
+  if(sound){bed.pause();greeting.play().catch(()=>{$('#hubStatus').textContent='Choose HEAR GUARDIAN’S WELCOME to start the greeting.';});}
+ }
+ function launch(next){mode=next;sound=true;finished=false;hub.hidden=true;entrance.hidden=false;lock(true);flightReady.then(()=>{if(entrance.hidden)return;startup.currentTime=0;startup.play().catch(()=>{$('#arrivalStatus').textContent='Use SKIP FLIGHT to continue.';});});bed.play().catch(()=>{});$('#arrivalChoices').hidden=true;$('#arrivalExplanation').textContent=next==='auto'?'Guardian arrives, then the automatic walkthrough begins. No next-button clicking needed.':'Guardian arrives, then asks how you want to interact.';$('#arrivalStatus').textContent='ARRIVING OVER TORONTO · Your experience continues automatically.';}
+ window.guardianArrival=()=>{quiet();presence.hidden=true;launch('meet');};
+ $('#arrivalAuto').addEventListener('click',()=>launch('auto'));
+ $('#arrivalSound').addEventListener('click',()=>launch('meet'));
+ $('#arrivalSkip').addEventListener('click',()=>{sound=true;welcome();});
+ startup.addEventListener('ended',welcome);
+ startup.addEventListener('error',()=>{$('#arrivalStatus').textContent='The flight could not load. Use SKIP FLIGHT to continue.';});
+ $('#hubAuto').addEventListener('click',()=>{showPage();window.guardianTour.start();});
+ $('#hubMenu').addEventListener('click',showMenu);$('#guardianMenu').addEventListener('click',showMenu);
+ $('#menuClose').addEventListener('click',()=>{menu.hidden=true;talk.focus();});
+ $('#watchGuardian').addEventListener('click',()=>{recognition?.stop();menu.hidden=true;greeting.pause();window.guardianTour.start();});
+ $('#replayGreeting').addEventListener('click',()=>{greeting.currentTime=0;greeting.play().catch(()=>{$('#hubStatus').textContent='Audio is unavailable. The same welcome is written above.';});});
+ greeting.addEventListener('error',()=>{$('#hubStatus').textContent='Would you like to speak with Guardian, choose from the menu, or watch the automatic demo?';});
+ document.querySelectorAll('[data-scenario]').forEach(button=>button.addEventListener('click',async()=>{menu.hidden=true;showPage();$('#request').value=button.dataset.scenario;await run('plan');}));
+ $('#menuGame').addEventListener('click',()=>{menu.hidden=true;showPage();$('#staarverse').scrollIntoView({behavior:'smooth'});});
+ $('#tourVoice').addEventListener('play',()=>window.guardianState('GUIDING YOU'));
+ $('#tourVoice').addEventListener('pause',()=>window.guardianState('HERE WITH YOU'));
+ document.addEventListener('visibilitychange',()=>{if(document.hidden){startup.pause();greeting.pause();bed.pause();recognition?.stop();}else if(!entrance.hidden)startup.play().catch(()=>{});});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!entrance.hidden)welcome();else if(!hub.hidden){showPage();showMenu();}menu.hidden=true;recognition?.stop();}});
+ let recognition;
+ const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+ function startVoice(){
+  quiet();showPage();menu.hidden=true;$('#studio').scrollIntoView({behavior:'smooth'});
+  if(!recognition){message.textContent='Speech recognition is unavailable in this browser. Choose a scenario or type your request.';showMenu();return;}
+  if(listening){recognition.stop();return;}
+  try{recognition.start();}catch{message.textContent='Microphone is busy. Try again or choose the menu.';}
+ }
+ talk.addEventListener('click',startVoice);$('#hubSpeak').addEventListener('click',startVoice);
+ if(Recognition){
+ recognition=new Recognition();recognition.lang='en-CA';recognition.interimResults=true;recognition.continuous=true;
+ recognition.onstart=()=>{listening=true;presence.classList.add('listening');talk.textContent='STOP LISTENING';message.textContent='Listening. Say your request, “show menu”, “watch demo”, or “stop listening”.';window.guardianState('LISTENING TO YOU');};
+ recognition.onend=()=>{listening=false;presence.classList.remove('listening');talk.textContent='TALK TO GUARDIAN';window.guardianState('HERE WITH YOU');};
+ recognition.onerror=e=>{message.textContent=e.error==='not-allowed'?'Microphone permission was not granted. Choose the menu or type a request.':'Recognition could not finish. Try again or choose the menu.';};
+ recognition.onresult=async e=>{
+  for(let i=e.resultIndex;i<e.results.length;i++){
+   const result=e.results[i], text=result[0].transcript.trim();message.textContent=text;if(!result.isFinal)continue;
+   const command=text.toLowerCase().replace(/[.!?,]/g,'').replace(/^guardian\s*/,'').trim();
+   if(['stop listening','microphone off'].includes(command)){recognition.stop();continue;}
+   if(['show menu','menu','choose menu'].includes(command)){recognition.stop();showMenu();continue;}
+   if(['watch demo','start demo','guide me','start tour','walk me through'].includes(command)){recognition.stop();showPage();window.guardianTour.start();continue;}
+   if(['next','next step'].includes(command)){window.guardianTour.next();continue;}
+   if(['pause','pause tour'].includes(command)){window.guardianTour.pause();continue;}
+   if(['resume','continue'].includes(command)){window.guardianTour.resume();continue;}
+   if(['stop','stop tour'].includes(command)){window.guardianTour.stop();continue;}
+   if(/(open|show|enter).*(staarverse|star verse|game)/.test(command)){window.guardianTour.stop();$('#staarverse').scrollIntoView({behavior:'smooth'});continue;}
+   if(busy){message.textContent='Guardian is finishing the previous request. Please wait.';continue;}
+   busy=true;window.guardianTour.stop();$('#request').value=text;
+   try{const data=await run('plan');message.textContent=data?'Your plan is on screen. You can say another request, or “show menu”.':'The request could not finish. Try again or use the menu.';}finally{busy=false;}
+  }
+ };
+ }else{talk.textContent='USE SCENARIO MENU';$('#hubSpeak span').textContent='Unavailable in this browser. The menu remains available.';}
+ lock(true);$('#arrivalAuto').focus();
 })();
