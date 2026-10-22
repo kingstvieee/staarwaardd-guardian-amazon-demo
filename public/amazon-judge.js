@@ -71,7 +71,9 @@ async function guardianRequest(mode, input) {
 }
 $('#connectMcp')?.addEventListener('click', ()=>connectMcp().catch(error=>{$('#status').textContent=error.message;}));
 
+let latestPlanRequest = 0;
 async function run(mode) {
+  const requestId = ++latestPlanRequest;
   const status = $('#status');
   const result = $('#result');
   window.guardianState?.('COORDINATING');
@@ -79,13 +81,16 @@ async function run(mode) {
   result.hidden = true;
   try {
     const data = await guardianRequest(mode, $('#request').value);
+    if (requestId !== latestPlanRequest) return;
     render(data);
     window.guardianState?.(data.plan?.questions?.length ? 'DETAIL NEEDED · YOUR CALL' : 'PLAN READY · YOUR CALL');
     status.textContent = data.plan?.questions?.length ? 'One detail needed: '+data.plan.questions.join(' ') : 'Plan prepared. Review the request-specific steps; zero external actions executed.';
     return data;
   } catch (error) {
+    if (requestId !== latestPlanRequest) return;
     window.guardianState?.('READY TO RETRY');
-    status.textContent = error.message;
+    $('#standby').hidden = false;
+    status.textContent = 'The plan could not load. Your request is preserved; choose RUN GUARDIAN to retry. ' + error.message;
   }
 }
 
@@ -96,7 +101,7 @@ function render(data) {
   $('#summary').textContent = plan.summary || 'Guardian coordinated the request.';
   $('#decision').textContent = (coordination.decision || 'Preparation only.') + ((plan.constraints || []).length ? ' Your constraints: '+plan.constraints.join('; ')+'.' : '') + ((plan.questions || []).length ? ' '+plan.questions.join(' ') : '');
 
-  $('#techProof').textContent = `${data.architecture?.interface || 'Web simulation'} → ${data.architecture?.protocol || 'HTTPS JSON'} → ${data.architecture?.orchestrator || 'Guardian'}. This source export makes no AWS calls.`;
+  $('#techProof').textContent = `${data.architecture?.interface || 'Web simulation'} → ${data.architecture?.protocol || 'HTTPS JSON'} → ${data.architecture?.orchestrator || 'Guardian'}. This browser path makes no AWS calls; the separate Alexa skill runs on AWS Lambda.`;
   $('#designProof').textContent = 'Your timing, draft-only instructions and requested actions are preserved in the preparation plan.';
   $('#impactProof').textContent = 'Illustrates fewer app handoffs; no real-world time saving or customer adoption is measured in this demo.';
   $('#ideaProof').textContent = 'STAARWAARDD explores one connected-life view, with Guardian preparing the relevant next steps and the human retaining authority.';
