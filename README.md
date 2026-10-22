@@ -76,3 +76,7 @@ The basic adapter was hardened for Streamable HTTP: origin validation, Accept an
 npm test uses the official @modelcontextprotocol/sdk Client and StreamableHTTPClientTransport independently of the web client. It checks initialization, discovery, each of the seven domains, a combined seven-domain request, mixed approval gating, the six-domain judge scenario, and transport rejection cases. The test does not establish Alexa device certification or universal platform compatibility.
 
 Scope: seven life-planning domains are routable. STAARVERSE remains the eighth visual portal, an in-development game preview. Fire TV, Ring, Bee, AWS runtime and live personal-service integrations are not claimed.
+
+## Standard Alexa custom-skill adapter
+
+See [alexa/README.md](alexa/README.md) for the prepared Lambda adapter and interaction model. It reuses this planner without extra dependencies or new media generation. Local adapter tests are included in `npm test`. Amazon account configuration and an end-to-end Alexa test are still required; live Alexa connectivity is not claimed. This additional interface does not replace the competition MCP path or provide gated Alexa+ access.

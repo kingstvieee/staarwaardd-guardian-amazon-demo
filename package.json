@@ -8,7 +8,7 @@
     "node": ">=22"
   },
   "scripts": {
-    "test": "node test/smoke.mjs && node test/mcp.mjs",
+    "test": "node test/smoke.mjs && node test/mcp.mjs && node test/alexa.mjs",
     "start": "node server.mjs",
     "build": "node build-standalone.mjs"
   },

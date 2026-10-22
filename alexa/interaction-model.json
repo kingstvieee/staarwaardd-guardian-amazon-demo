@@ -1,0 +1,18 @@
+{
+  "interactionModel": {
+    "languageModel": {
+      "invocationName": "star ward guardian",
+      "intents": [
+        {"name":"GuardianPlanIntent","slots":[{"name":"request","type":"AMAZON.SearchQuery"}],"samples":["plan for {request}","prepare for {request}","help me with {request}"]},
+        {"name":"GuardianDemoIntent","slots":[],"samples":["run the demo","show the judge scenario","show me the demo"]},
+        {"name":"AMAZON.HelpIntent","samples":[]},
+        {"name":"AMAZON.StopIntent","samples":[]},
+        {"name":"AMAZON.CancelIntent","samples":[]},
+        {"name":"AMAZON.FallbackIntent","samples":[]},
+        {"name":"AMAZON.YesIntent","samples":[]},
+        {"name":"AMAZON.NoIntent","samples":[]}
+      ],
+      "types": []
+    }
+  }
+}
