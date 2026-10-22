@@ -30,7 +30,7 @@ Amazon's hackathon FAQ says the Alexa+ Category SDK, MCP Toolkit, CLI and Web Si
 
 ## Visual response revision (October 22)
 
-The previous adapter's launch, demo, held request and yes boundary were captured in the user's Amazon Simulator recording. This code adds request-specific speech and an APL screen generated from the same plan. The visual revision is not yet verified live.
+The user's October 22, 2026 recording demonstrates the revised adapter in Amazon's Alexa Simulator. Launch returns speech and a Guardian welcome screen. The request `plan for publish my campaign and prepare meeting notes for tomorrow at three` returns matching speech and APL content: Work is PREPARATION ONLY and Creativity is APPROVAL REQUIRED. Saying yes returns the no-execution response and updates Device Display. This establishes simulator operation, not physical Echo testing or browser-tab synchronization.
 
 Upload the revised ZIP to the existing `staarwaardd-guardian` Lambda and deploy. Keep the existing `ALEXA_SKILL_ID` and skill-restricted Alexa Skills Kit trigger. In the skill console, enable **Build → Interfaces → Alexa Presentation Language**, save/build, and retest using a screen-capable simulator. Do not create a Function URL.
 
