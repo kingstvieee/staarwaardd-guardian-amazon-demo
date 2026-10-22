@@ -2,6 +2,18 @@
 
 This is the **same existing Alexa+-style web simulation**, exported from `kingstvieee/cross-life-ai` PR #14 for reproducible judging. It is not another Devpost entry or a new implementation of the broader STAARWAARDD app.
 
+## Judge quick start — one request, two decisions
+
+Open the [live demo](https://staarwaardd-guardian-amazon-demo.vercel.app/amazon-judge.html). No sign-in, microphone, payment or cloud setup is required.
+
+1. Choose **SKIP FLIGHT · MEET GUARDIAN**, then **CHOOSE FROM THE MENU**.
+2. Choose **PREPARE WORK. REVIEW THE CAMPAIGN.** Guardian connects to MCP automatically.
+3. Inspect the Work preparation draft and Creativity approval marker. The meeting keeps **tomorrow at three**; no unrelated campaign deadline is invented.
+4. Edit or copy the meeting checklist. It is a preparation template, not notes read from a real calendar.
+5. Inspect the protocol trace: initialization, tool discovery and the planning call. External actions remain **zero**.
+
+The automatic route and approved [2:34 video](https://www.youtube.com/watch?v=tZ0PqoCBFic) remain available. The [developer friction log](FRICTION_LOG.md) records observed issues and workarounds.
+
 ## Run
 
 Use Node.js 22 or newer. No cloud account or API key is needed. The runtime uses Node built-ins; npm ci installs the official MCP SDK used as an independent test client.
@@ -29,7 +41,7 @@ The hosted browser performs real MCP initialization, discovery and planning thro
 
 The standard Alexa custom skill reuses the same planner and returns speech plus an APL visual response from that same plan on supported screens. The user's October 22, 2026 screen recording verifies the previous skill build in Amazon's Alexa Simulator: launch speech and Guardian welcome display; a mixed request with Work preparation-only and Creativity approval-required on the same screen; and a yes response confirming no execution. That APL visual activation is demonstrated in the simulator; the new card and phrase revision below still requires deployment and retesting. It does not synchronize an independent browser tab, certify an Echo device, or provide Amazon's gated Alexa+ add-on access.
 
-No external action is ever executed, even after a yes. A marked action is a review boundary, not a working execution connector. No AI-model or AWS call is made by the web planner; the separate Alexa adapter runs in the user's configured AWS Lambda.
+No external action is ever executed, even after a yes. A marked action is a review boundary, not a working execution connector. No runtime AI-model or AWS call is made by the web planner; the separate Alexa adapter runs in the user's configured AWS Lambda.
 
 ## Source provenance and changes
 
@@ -55,7 +67,7 @@ The original cross-life-ai repository was publicly visible when checked; this ex
 
 ## Submission status
 
-Use this repository for the existing Devpost project **1191047 — STAARWAARDD Guardian for Alexa+**. At the last live inspection it remained DRAFT. A public functioning-demo video under three minutes and final submission are still outstanding. This repository is not proof of submission.
+Use this repository for the existing [STAARWAARDD Guardian for Alexa+ entry](https://devpost.com/software/staarwaardd-guardian-for-alexa). The public 2:34 video is linked above. Submission status is authoritative on Devpost; publishing source does not submit an entry. The isolated demo remains distinct from the broader proprietary application.
 
 
 ## The Guardian Issue — editorial demo
@@ -65,7 +77,7 @@ The judge runner presents a futuristic Toronto cover, seven-domain world atlas p
 
 ## Guided audio tour
 
-Choose **TAKE THE GUIDED TOUR** on the cover. Ten recorded AI-narration chapters explain the eight visual portals, request input, meeting notes, approval gating, full judge scenario, coordination trace and metrics, human-control boundary, STAARVERSE in-development preview and source access. The hosted tour uses the real MCP client and tool before narrating each result. The game preview does not add a game-planning domain or imply a playable integration.
+Choose **TAKE THE GUIDED TOUR** on the cover. Four selected existing AI-narration chapters form the current concise automatic route: introduction, MCP connection, approval boundary and source access. Other audio assets are retained; they are not all played by this route. The hosted tour uses the real MCP client and tool before narrating each result. The game preview does not add a game-planning domain or imply a playable integration.
 
 The original instrumental is kept beneath the speech. Sound starts only after a deliberate click. Pause/resume, previous/next, replay, music toggle, voice level, captions and Escape-to-close are available; backgrounding the tab pauses playback. Audio failures leave the transcript visible. Run npm run build to generate dist/guardian-demo.html. The standalone bundle embeds the same eleven MP3 assets and invokes the same planner/JSON handler locally. It clearly labels itself an offline preview and disables MCP connection; it does not claim network integration. Generated bundles are not committed, preventing stale downloadable builds.
 
@@ -79,7 +91,7 @@ The basic adapter was hardened for Streamable HTTP: origin validation, Accept an
 
 npm test uses the official @modelcontextprotocol/sdk Client and StreamableHTTPClientTransport independently of the web client. It checks initialization, discovery, each of the seven domains, a combined seven-domain request, mixed approval gating, the six-domain judge scenario, and transport rejection cases. The test does not establish Alexa device certification or universal platform compatibility.
 
-Scope: seven life-planning domains are routable. STAARVERSE remains the eighth visual portal, an in-development game preview. Fire TV, Ring, Bee, AWS runtime and live personal-service integrations are not claimed.
+Scope: seven life-planning domains are routable. STAARVERSE remains the eighth visual portal, an in-development game preview. The separate standard Alexa skill runs on AWS Lambda, documented in alexa/README.md and demonstrated in the video. Fire TV, Ring, Bee, Bedrock/model runtime and live personal-account integrations are not claimed.
 
 ## Standard Alexa custom-skill adapter
 
