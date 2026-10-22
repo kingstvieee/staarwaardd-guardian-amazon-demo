@@ -148,7 +148,8 @@ function render(data) {
 
   $('#standby').hidden = true;
   $('#result').hidden = false;
-  $('#studio').scrollIntoView({behavior:'smooth', block:'start'});
+  const resultTarget = window.matchMedia('(max-width: 700px)').matches ? $('#result') : $('#studio');
+  resultTarget.scrollIntoView({behavior:'auto', block:'start'});
 }
 
 function esc(value) {
@@ -408,11 +409,13 @@ const tourChapters = [0,2,4,9].map(i=>({...allTourChapters[i], audio:i+1}));
  let recognition;
  const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition;
  function startVoice(){
-  quiet();showPage();menu.hidden=true;$('#studio').scrollIntoView({behavior:'smooth'});
-  if(!recognition){message.textContent='Speech recognition is unavailable in this browser. Choose a scenario or type your request.';showMenu();return;}
+  quiet();window.guardianTour.stop();showPage();menu.hidden=true;
+  $('#request').scrollIntoView({behavior:'auto',block:'center'});
+  if(!recognition){message.textContent='Speech is unavailable here. Type your request in the box, or choose SCENARIO MENU.';$('#status').textContent=message.textContent;$('#request').focus({preventScroll:true});return;}
   if(listening){recognition.stop();return;}
   try{recognition.start();}catch{message.textContent='Microphone is busy. Try again or choose the menu.';}
  }
+ const viewPlan=document.createElement('button');viewPlan.type='button';viewPlan.id='viewGuardianPlan';viewPlan.textContent='VIEW MY PLAN ↓';viewPlan.addEventListener('click',()=>{quiet();window.guardianTour.stop();showPage();menu.hidden=true;const target=$('#result').hidden?$('#request'):$('#result');target.scrollIntoView({behavior:'auto',block:'start'});});talk.insertAdjacentElement('afterend',viewPlan);
  talk.addEventListener('click',startVoice);$('#hubSpeak').addEventListener('click',startVoice);
  if(Recognition){
  recognition=new Recognition();recognition.lang='en-CA';recognition.interimResults=true;recognition.continuous=true;
