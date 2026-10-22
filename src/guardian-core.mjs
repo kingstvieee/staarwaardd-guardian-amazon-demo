@@ -54,9 +54,10 @@ function detailFor(portal,clause,intent,timing) {
  }[portal];
  return `${subject} ${guide}${timing.length?' Stated timing: '+timing.join('; ')+'.':''}${intent.prohibited?' Your do-not-execute instruction is preserved.':''}${intent.externalAction?' Approval required for the requested '+intent.action+' action; this demo cannot execute it.':''}`;
 }
+function extractTiming(request){return [...request.matchAll(/\b(?:tomorrow|today|tonight|next\s+\w+|(?:at|before|after|by)\s+\d{1,2}(?::\d{2})?\s*(?:a\.?m\.?|p\.?m\.?)?|\d+\s*(?:minutes?|hours?)\s+late)\b/ig)].map(m=>m[0]);}
 export function buildGuardianPlan(request,context={}) {
  request=clean(request); const clauses=clausesFor(request);
- const timing=[...request.matchAll(/\b(?:tomorrow|today|tonight|next\s+\w+|(?:at|before|after|by)\s+\d{1,2}(?::\d{2})?\s*(?:a\.?m\.?|p\.?m\.?)?|\d+\s*(?:minutes?|hours?)\s+late)\b/ig)].map(m=>m[0]);
+ const timing=extractTiming(request);
  const restrictions=clauses.filter(c=>negative.test(c));
  const entries=[];const unresolved=[];let inheritedPreparation=false;let inheritedAction;let lastDomains=[];
  for(const clause of clauses){
@@ -87,7 +88,7 @@ export function buildGuardianPlan(request,context={}) {
  const portals=PORTALS.filter(p=>byPortal.has(p));
  const questions=[...unresolved];
  if(!portals.length){portals.push('Work');byPortal.set('Work',{portal:'Work',clause:request||'a new request',intent:{externalAction:false}});questions.push('What specific task, people and deadline should I prepare for?');}
- const steps=portals.map((portal,i)=>{const {clause,intent}=byPortal.get(portal);return{id:`${portal.toLowerCase()}-${i+1}`,portal,capability:portal.toLowerCase()+'_preparation',title:titleFor(portal,clause,intent),status:intent.externalAction?'awaiting_approval':'prepared',externalAction:Boolean(intent.externalAction),source:clause,summary:detailFor(portal,clause,intent,timing)};});
+ const steps=portals.map((portal,i)=>{const {clause,intent}=byPortal.get(portal);return{id:`${portal.toLowerCase()}-${i+1}`,portal,capability:portal.toLowerCase()+'_preparation',title:titleFor(portal,clause,intent),status:intent.externalAction?'awaiting_approval':'prepared',externalAction:Boolean(intent.externalAction),source:clause,timing:extractTiming(clause),summary:detailFor(portal,clause,intent,extractTiming(clause))};});
  const held=steps.filter(s=>s.externalAction).length;
  // Dependencies are proposed scheduling constraints, never claimed messages between agents.
  const dependencies=/\b(late|before|after|delay\w*)\b/i.test(request)&&portals.includes('Work')?portals.filter(p=>p!=='Work').map(p=>({from:'Work',to:p,signal:`Review ${p} timing against the stated work constraint: ${timing.join('; ')||clauses.find(c=>/late|before|after|delay/i.test(c))}. No schedule has been changed.`})):[];
