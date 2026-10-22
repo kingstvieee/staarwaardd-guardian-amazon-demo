@@ -1,0 +1,16 @@
+{
+  "name": "STAARWAARDD Guardian AWS Toolkit",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:1-22-bookworm",
+  "remoteEnv": {
+    "AWS_PROFILE": "staarwaardd",
+    "AWS_REGION": "us-east-1",
+    "AWS_DEFAULT_REGION": "us-east-1"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "amazonwebservices.aws-toolkit-vscode"
+      ]
+    }
+  }
+}
