@@ -81,7 +81,7 @@ async function run(mode) {
     const data = await guardianRequest(mode, $('#request').value);
     render(data);
     window.guardianState?.('PLAN READY · YOUR CALL');
-    status.textContent = 'Guardian coordination complete. Sensitive actions remain approval-gated.';
+    status.textContent = data.plan?.questions?.length ? 'One detail needed: '+data.plan.questions.join(' ') : 'Plan prepared. Review the request-specific steps; zero external actions executed.';
     return data;
   } catch (error) {
     window.guardianState?.('READY TO RETRY');
@@ -94,10 +94,10 @@ function render(data) {
   const coordination = plan.coordination || {};
   const domains = plan.domains || [];
   $('#summary').textContent = plan.summary || 'Guardian coordinated the request.';
-  $('#decision').textContent = coordination.decision || 'Prepared actions only; approval required for external changes.';
+  $('#decision').textContent = (coordination.decision || 'Preparation only.') + ((plan.constraints || []).length ? ' Your constraints: '+plan.constraints.join('; ')+'.' : '') + ((plan.questions || []).length ? ' '+plan.questions.join(' ') : '');
 
   $('#techProof').textContent = `${data.architecture?.interface || 'Web simulation'} → ${data.architecture?.protocol || 'HTTPS JSON'} → ${data.architecture?.orchestrator || 'Guardian'}. This source export makes no AWS calls.`;
-  $('#designProof').textContent = 'One request becomes a visible plan: selected domains, illustrative preparation steps and permission markers.';
+  $('#designProof').textContent = 'Your timing, draft-only instructions and requested actions are preserved in the preparation plan.';
   $('#impactProof').textContent = 'Illustrates fewer app handoffs; no real-world time saving or customer adoption is measured in this demo.';
   $('#ideaProof').textContent = 'STAARWAARDD explores one connected-life view, with Guardian preparing the relevant next steps and the human retaining authority.';
 
@@ -129,7 +129,7 @@ function render(data) {
   $('#metrics').innerHTML = [
     ['User requests', metrics.userRequests ?? 1],
     ['Relevant portals', metrics.portalsActivated ?? domains.length],
-    ['Cross-portal exchanges', metrics.crossPortalExchanges ?? (coordination.exchanges || []).length],
+    ['Proposed timing dependencies', metrics.crossPortalExchanges ?? (coordination.exchanges || []).length],
     ['External actions executed', metrics.externalActionsExecuted ?? 0]
   ].map(([label, value]) => `<div><b>${esc(String(value))}</b><span>${esc(label)}</span></div>`).join('');
 
@@ -155,7 +155,7 @@ verseMotion?.addEventListener('click', () => {
 });
 
 
-const tourChapters = [
+const allTourChapters = [
   {
     "title": "Welcome to STAARWAARDD",
     "target": "cover",
@@ -213,13 +213,16 @@ const tourChapters = [
   }
 ];
 
+// A concise automatic path reuses existing narration, with no new generation.
+const tourChapters = [0,2,4,9].map(i=>({...allTourChapters[i], audio:i+1}));
+
 // Recorded narration follows real simulation results; no external action is executed.
 (() => {
   const voice = $('#tourVoice'), bed = $('#tourBed'), player = $('#tourPlayer');
   let index = 0, active = false, preparing = false, sequence = 0, musicOn = true;
   const judgeInput = 'Guardian, my investor pitch is running late. Prepare my launch, fitting, anniversary dinner, gift delivery, wellbeing reset and home arrival. Draft a message about the dinner but do not send it.';
   const audioSource = path => window.demoTourAudio?.[path] || path;
-  bed.volume = 0.7;
+  bed.volume = 0.12;
   function controls() {
     $('#tourPrev').disabled = preparing || index === 0;
     $('#tourNext').disabled = preparing || index === tourChapters.length - 1;
@@ -291,7 +294,7 @@ const tourChapters = [
       const target = document.getElementById(chapter.target);
       target.classList.add('tour-focus');
       target.scrollIntoView({behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block:'start'});
-      voice.src = audioSource(`/audio/voice-${String(index + 1).padStart(2,'0')}.mp3`);
+      voice.src = audioSource(`/audio/voice-${String(chapter.audio).padStart(2,'0')}.mp3`);
       voice.load();
       preparing = false; controls();
       if (autoplay) await playAudio(); else pause();
@@ -347,7 +350,7 @@ const tourChapters = [
  // Preserve the approved MP4 bytes while distributing it in small static assets.
  const flightReady=(async()=>{
   if(!startup.dataset.arrival)return;
-  if(window.demoOffline){startup.src=startup.dataset.arrival;return;}
+  if(window.demoOffline){startup.src=startup.dataset.arrival;startup.playbackRate=2.75;return;}
   const response=await fetch('/assets/guardian-flight.json');if(!response.ok)throw new Error('Flight manifest unavailable');
   const manifest=await response.json();
   const pieces=await Promise.all(manifest.parts.map(async name=>{const r=await fetch('/assets/'+name);if(!r.ok)throw new Error('Flight part unavailable');return r.arrayBuffer();}));
@@ -355,7 +358,7 @@ const tourChapters = [
   if(blob.size!==manifest.bytes)throw new Error('Flight incomplete');
   const digest=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',await blob.arrayBuffer()))).map(b=>b.toString(16).padStart(2,'0')).join('');
   if(digest!==manifest.sha256)throw new Error('Flight integrity check failed');
-  startup.src=URL.createObjectURL(blob);if(!entrance.hidden)startup.play().catch(()=>{});
+  startup.src=URL.createObjectURL(blob);startup.playbackRate=2.75;
  })().catch(()=>{$('#arrivalStatus').textContent='The flight could not load. Use SKIP FLIGHT to continue.';});
 
  window.guardianState=text=>{$('#presenceState').textContent=text;};
@@ -370,7 +373,7 @@ const tourChapters = [
   hub.hidden=false;lock(true);$('#hubSpeak').focus();
   if(sound){bed.pause();greeting.play().catch(()=>{$('#hubStatus').textContent='Choose HEAR GUARDIAN’S WELCOME to start the greeting.';});}
  }
- function launch(next){mode=next;sound=true;finished=false;hub.hidden=true;entrance.hidden=false;lock(true);flightReady.then(()=>{if(entrance.hidden)return;startup.currentTime=0;startup.play().catch(()=>{$('#arrivalStatus').textContent='Use SKIP FLIGHT to continue.';});});bed.play().catch(()=>{});$('#arrivalChoices').hidden=true;$('#arrivalExplanation').textContent=next==='auto'?'Guardian arrives, then the automatic walkthrough begins. No next-button clicking needed.':'Guardian arrives, then asks how you want to interact.';$('#arrivalStatus').textContent='ARRIVING OVER TORONTO · Your experience continues automatically.';}
+ function launch(next){mode=next;sound=true;finished=false;hub.hidden=true;entrance.hidden=false;lock(true);flightReady.then(()=>{if(entrance.hidden)return;startup.currentTime=0;startup.playbackRate=2.75;startup.play().catch(()=>{$('#arrivalStatus').textContent='Use SKIP FLIGHT to continue.';});});bed.play().catch(()=>{});$('#arrivalChoices').hidden=true;$('#arrivalExplanation').textContent=next==='auto'?'Guardian arrives, then the automatic walkthrough begins. No next-button clicking needed.':'Guardian arrives, then asks how you want to interact.';$('#arrivalStatus').textContent='ARRIVING OVER TORONTO · Your experience continues automatically.';}
  window.guardianArrival=()=>{quiet();presence.hidden=true;launch('meet');};
  $('#arrivalAuto').addEventListener('click',()=>launch('auto'));
  $('#arrivalSound').addEventListener('click',()=>launch('meet'));
@@ -421,5 +424,5 @@ const tourChapters = [
   }
  };
  }else{talk.textContent='USE SCENARIO MENU';$('#hubSpeak span').textContent='Unavailable in this browser. The menu remains available.';}
- lock(true);$('#arrivalAuto').focus();
+ startup.playbackRate=2.75;lock(true);$('#arrivalAuto').focus();
 })();

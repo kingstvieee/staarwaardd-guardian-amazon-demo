@@ -21,11 +21,15 @@ Open http://127.0.0.1:3335/amazon-judge.html. The server binds only to localhost
 4. Try "Prepare my meeting notes": its plan remains preparation-only.
 5. No action sends, purchases, publishes, books or controls a device.
 
-## Honest scope
+## Verified scope and limits
 
-The planner selects domains using keywords and produces generic preparation guidance. External-action keywords conservatively hold all domains in the request. It cannot reliably interpret negation or assign each action to its owning domain. Inter-domain exchanges and counters are illustrative. They do not prove independent agents, actual scheduling conflict resolution, customer adoption or time saved.
+The shared planner uses structured rules, not a language-model call. It preserves literal request details and stated times, distinguishes draft-only instructions from requested external actions, and assigns approval markers to relevant steps. Unknown tasks ask for clarification. It does not claim general natural-language understanding, live calendar access, independently communicating agents, actual schedule changes, customer adoption or measured time savings.
 
-This is an Alexa+ track **web demonstration with a working MCP transport**. The browser sends initialize, notifications/initialized, tools/list, and tools/call to `/api/mcp` over MCP 2025-11-25 Streamable HTTP, using JSON response mode. The `staarwardd_plan` tool calls the existing deterministic Guardian planner. Amazon’s gated Alexa+ device/console tools are unavailable to ordinary hackathon participants; direct device invocation is not demonstrated. There is no AI-model invocation or AWS runtime integration. The export intentionally omits the optional unverified Bedrock adapter and rejects Bedrock requests. AWS Builder is not claimed.
+The hosted browser performs real MCP initialization, discovery and planning through `/api/mcp`. The automatic path uses four existing narration chapters after an eight-second playback of the approved flight. The interactive path accepts a menu selection, typed request or supported browser speech input. Browser speech recognition is not the Amazon Alexa service.
+
+The standard Alexa custom skill reuses the same planner and returns speech plus an APL visual response from that same plan on supported screens. The earlier skill version was demonstrated in Amazon's Alexa Simulator on October 22, 2026. This revision's Lambda upload, APL interface activation and end-to-end visual test must be completed before claiming the visual response is live. It does not synchronize an independent browser tab, certify an Echo device, or provide Amazon's gated Alexa+ add-on access.
+
+No external action is ever executed, even after a yes. A marked action is a review boundary, not a working execution connector. No AI-model or AWS call is made by the web planner; the separate Alexa adapter runs in the user's configured AWS Lambda.
 
 ## Source provenance and changes
 
@@ -45,7 +49,7 @@ The concept predates the hackathon. Competition-period additions are the judge U
 
 ## Licensing boundary
 
-The MIT license applies only to the software and documentation included in **this repository**. No broader app source, prior git history, Guardian footage, character likeness, brand artwork, private account data or credentials is included. This export grants no license to other STAARWAARDD repositories or assets and no trademark rights in STAARWAARDD, RISING STAARDFORM or DIGGITSTAAR.
+The MIT license applies only to the software and documentation included in **this repository**. No broader app source, prior git history, private account data or credentials is included. Approved Guardian footage and demo artwork are included solely for viewing this demonstration; the MIT software license does not grant character, media or trademark rights. This export grants no license to other STAARWAARDD repositories or assets and no trademark rights in STAARWAARDD, RISING STAARDFORM or DIGGITSTAAR.
 
 The original cross-life-ai repository was publicly visible when checked; this export does not change its visibility or license. Proprietary ownership is distinct from repository visibility.
 
@@ -76,3 +80,9 @@ The basic adapter was hardened for Streamable HTTP: origin validation, Accept an
 npm test uses the official @modelcontextprotocol/sdk Client and StreamableHTTPClientTransport independently of the web client. It checks initialization, discovery, each of the seven domains, a combined seven-domain request, mixed approval gating, the six-domain judge scenario, and transport rejection cases. The test does not establish Alexa device certification or universal platform compatibility.
 
 Scope: seven life-planning domains are routable. STAARVERSE remains the eighth visual portal, an in-development game preview. Fire TV, Ring, Bee, AWS runtime and live personal-service integrations are not claimed.
+
+## Standard Alexa custom-skill adapter
+
+See [alexa/README.md](alexa/README.md). One planner serves web MCP and Alexa. The adapter supports voice-only devices and adds an APL visual response only when the request advertises `Alexa.Presentation.APL`. Request-specific titles, timing and constraints appear in both speech and the visual response. The approved flight-derived poster maintains Guardian continuity. Tests verify supported-interface gating, speech/visual consistency, mixed-action ownership and request validation.
+
+The current adapter must be uploaded to the existing Lambda before retesting this revision. Enable **Build → Interfaces → Alexa Presentation Language**, save/build, then use a screen-capable simulator. This does not grant access to gated Alexa+ APIs.

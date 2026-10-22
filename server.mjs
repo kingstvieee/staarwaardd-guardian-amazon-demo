@@ -14,6 +14,8 @@ const assets = {
 for (const name of [...Array.from({length:10}, (_,i)=>'voice-'+String(i+1).padStart(2,'0')), 'instrumental']) {
   assets['/audio/'+name+'.mp3'] = ['audio/'+name+'.mp3', 'audio/mpeg'];
 }
+for (const [name, mime] of [['guardian-flight.json','application/json'],['guardian-center.mp4','video/mp4'],['guardian-poster.jpg','image/jpeg'],...Array.from({length:14},(_,i)=>['guardian-flight-'+String(i).padStart(2,'0')+'.bin','application/octet-stream'])]) assets['/assets/'+name]=['assets/'+name,mime];
+assets['/audio/guardian-welcome.mp3']=['audio/guardian-welcome.mp3','audio/mpeg'];
 const port = Number(process.env.PORT || 3335);
 http.createServer(async (req, res) => {
   try {
