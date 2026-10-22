@@ -8,7 +8,7 @@
     "node": ">=22"
   },
   "scripts": {
-    "test": "node test/planning.mjs && node test/smoke.mjs && node test/mcp.mjs && node test/alexa.mjs",
+    "test": "node test/planning.mjs && node test/smoke.mjs && node test/mcp.mjs && node test/alexa.mjs && node test/quality-evaluation.mjs --assert",
     "start": "node server.mjs",
     "build": "node build-standalone.mjs"
   },

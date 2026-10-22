@@ -14,21 +14,24 @@ const xml = text => String(text).replace(/[&<>]/g, c=>({'&':'&amp;','<':'&lt;','
 function withDisplay(result, event, plan) {
   if (!event?.context?.System?.device?.supportedInterfaces?.['Alexa.Presentation.APL']) return result;
   const properties={};let nextText=0;
-  const text=(value,size=24,color='#ffffff')=>{const key='text'+(++nextText);properties[key]=xml(value);return {type:'Text',text:'${payload.guardian.properties.'+key+'}',fontSize:size,color};};
-  const card=(badge,title,detail)=>({type:'Frame',width:'100%',backgroundColor:'#182940',borderColor:'#8faac1',borderWidth:1,borderRadius:12,padding:18,spacing:14,item:{type:'Container',items:[text(badge,18,'#c9deef'),text(title,28),text(detail,22,'#dce9f2')]}});
+  const text=(value,size=24,color='#ffffff')=>{const key='text'+(++nextText);properties[key]=xml(value).replaceAll('\n','<br/>');return {type:'Text',width:'100%',height:'auto',maxLines:0,shrink:0,text:'${payload.guardian.properties.'+key+'}',fontSize:size,color};};
+  const card=(badge,title,detail)=>({type:'Frame',width:'100%',height:'auto',shrink:0,backgroundColor:'#182940',borderColor:'#8faac1',borderWidth:1,borderRadius:12,padding:18,spacing:14,item:{type:'Container',items:[text(badge,18,'#c9deef'),text(title,28),text(detail,22,'#dce9f2')]}});
   const cards=plan ? [
     ...(plan.questions.length?[card('DETAIL NEEDED','Please clarify',plan.questions.join(' '))]:[]),
     ...plan.steps.map(step=>card(step.status==='needs_clarification'?'DETAIL NEEDED':step.externalAction?'APPROVAL REQUIRED':'PREPARATION ONLY',step.portal+' · '+step.title,(step.timing.length?step.timing.join(' / ')+'\n':'')+step.output)),
     ...(plan.restrictions.length?[card('YOUR CONSTRAINTS','Kept for review',plan.restrictions.join('; '))]:[])
   ] : [card('GUARDIAN',event?.request?.type==='LaunchRequest'?'Your next steps, together':'Your decision stays yours',result.response.outputSpeech.text)];
-  const content={type:'Container',width:'100%',height:'100%',paddingLeft:24,paddingRight:24,paddingTop:16,paddingBottom:16,items:[
-    text('STAARWAARDD GUARDIAN',22,'#c9deef'),
-    {type:'Container',direction:'row',grow:1,shrink:1,items:[
-      {type:'Image',source:publicDemo+'/assets/guardian-poster.jpg',width:'18vw',height:'60vh',scale:'best-fit'},
-      {type:'ScrollView',width:'74vw',height:'74vh',item:{type:'Container',width:'100%',items:cards}}
-    ]},
-    text('0 ACTIONS EXECUTED · Scroll for drafts and details',16,'#a9d7ed')
-  ]};
+  // A single full-viewport scroller owns all content. Cards grow with text;
+  // a fixed poster row cannot consume the space needed by long drafts.
+  const content={type:'ScrollView',id:'guardianPlanScroll',width:'100%',height:'100%',item:{
+    type:'Container',width:'100%',height:'auto',paddingLeft:20,paddingRight:20,paddingTop:20,paddingBottom:32,items:[
+      text('STAARWAARDD GUARDIAN',22,'#c9deef'),
+      text('0 ACTIONS EXECUTED · Swipe up for every task and draft',18,'#a9d7ed'),
+      {type:'Image',source:publicDemo+'/assets/guardian-poster.jpg',width:80,height:100,scale:'best-fit',shrink:0},
+      ...cards,
+      text('END OF PLAN · Review before using any draft',18,'#a9d7ed')
+    ]
+  }};
   result.response.directives=[{type:'Alexa.Presentation.APL.RenderDocument',token:'guardian-plan',document:{type:'APL',version:'1.7',theme:'dark',mainTemplate:{parameters:['payload'],items:[{type:'Frame',width:'100vw',height:'100vh',backgroundColor:'#0c182c',item:content}]}},datasources:{guardian:{type:'object',properties}}}];
   return result;
 }

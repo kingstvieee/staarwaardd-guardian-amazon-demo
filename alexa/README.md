@@ -1,3 +1,9 @@
+## Readability and draft upgrade — October 22
+
+The current source adds one full-viewport scroll container, auto-height cards and unlimited text lines. Named recipients and supplied message content are retained. Long-message tests preserve the final marker, and voice-only behavior still receives no APL directive. These are source/response-structure checks, not rendered-device proof.
+
+The AWS Console was unavailable to the editing browser. This revision therefore requires a Lambda ZIP upload and a new display-capable Simulator check before it can be called deployed or visually verified. The interaction model is unchanged for this revision; no new model build is required solely for the readability update. Existing undistributed revisions remain subject to the checks below.
+
 # Guardian Alexa custom skill
 
 The existing development skill's launch, request-specific speech, Guardian APL display and no-execution response to “yes” were verified in the user's October 22 Amazon Simulator recording. This update adds natural phrasing, clarification, drafts and separate scrollable task cards. **This revision still needs upload, model rebuild and a simulator check.** A physical Echo and gated Alexa+ add-on are unverified.

@@ -28,5 +28,7 @@ const quoted=buildGuardianPlan('Draft a message to my family saying "Hello, dinn
 assert.equal(quoted.steps.length,1);assert.match(quoted.steps[0].output,/Hello, dinner at six and bring a gift/);
 assert.equal(buildGuardianPlan('Do not publish my campaign').steps.length,0);
 assert.equal(buildGuardianPlan('Plan dinner').steps[0].portal,'Relationships');
-assert.ok(buildGuardianPlan('Prepare meeting notes tomorrow').steps[0].output.includes('Agenda: [add priorities]'));
+const usefulNotes=buildGuardianPlan('Prepare meeting notes tomorrow').steps[0].output;
+assert.match(usefulNotes,/Agenda: Review meeting notes tomorrow/);
+assert.doesNotMatch(usefulNotes,/\[add priorities\]/);
 console.log('Unfamiliar clauses, conditions, conflicting times, spoken times and editable draft checks passed.');

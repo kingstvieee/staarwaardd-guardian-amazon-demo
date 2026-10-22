@@ -104,3 +104,9 @@ The previous adapter and APL interface were activated and demonstrated in the us
 The browser now offers editable, copyable preparation drafts. The planner preserves quoted draft text and spoken times, asks about unfamiliar clauses, conditional actions and conflicting times, and avoids inventing a Work task for unrecognized requests. It remains rules-based; it is not a general language model or an execution agent.
 
 Alexa's updated interaction model adds “plan dinner,” “prepare …” and similar carrier phrases. The adapter renders separate task cards and gives specific fallback/clarification prompts. Package and deployment steps are in `alexa/README.md`. The previous simulator build is verified; this revision requires upload, model rebuild and simulator verification. A physical Echo is untested. Browser and Alexa remain independent clients of the same planner.
+
+## Language, drafts and card readability follow-up
+
+The current source handles additional preparation wording (write/compose, talking points, presentations and team catch-ups), keeps named recipients and exact supplied quoted messages, and uses labelled agenda, audience, budget and location details in editable drafts. Quoted message content is not treated as an instruction to run another action. Equivalent spoken/numeric hours no longer create a false conflict. Suggestions remain distinguished from supplied facts; no private account is read.
+
+See [QUALITY_REPORT.md](QUALITY_REPORT.md) for the targeted 21-case before/after evaluation and its limits. APL now uses one full-viewport scroller with auto-height cards and unlimited text lines. The updated Lambda needs upload and rendered Simulator verification; source tests do not prove that deployment or eliminate every possible rendering issue.
