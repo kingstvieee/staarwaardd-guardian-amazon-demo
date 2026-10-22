@@ -27,7 +27,7 @@ The shared planner uses structured rules, not a language-model call. It preserve
 
 The hosted browser performs real MCP initialization, discovery and planning through `/api/mcp`. The automatic path uses four existing narration chapters after an eight-second playback of the approved flight. The interactive path accepts a menu selection, typed request or supported browser speech input. Browser speech recognition is not the Amazon Alexa service.
 
-The standard Alexa custom skill reuses the same planner and returns speech plus an APL visual response from that same plan on supported screens. The user's October 22, 2026 screen recording verifies the revised skill in Amazon's Alexa Simulator: launch speech and Guardian welcome display; a mixed request with Work preparation-only and Creativity approval-required on the same screen; and a yes response confirming no execution. The APL visual activation is therefore demonstrated in the simulator. It does not synchronize an independent browser tab, certify an Echo device, or provide Amazon's gated Alexa+ add-on access.
+The standard Alexa custom skill reuses the same planner and returns speech plus an APL visual response from that same plan on supported screens. The user's October 22, 2026 screen recording verifies the previous skill build in Amazon's Alexa Simulator: launch speech and Guardian welcome display; a mixed request with Work preparation-only and Creativity approval-required on the same screen; and a yes response confirming no execution. That APL visual activation is demonstrated in the simulator; the new card and phrase revision below still requires deployment and retesting. It does not synchronize an independent browser tab, certify an Echo device, or provide Amazon's gated Alexa+ add-on access.
 
 No external action is ever executed, even after a yes. A marked action is a review boundary, not a working execution connector. No AI-model or AWS call is made by the web planner; the separate Alexa adapter runs in the user's configured AWS Lambda.
 
@@ -85,7 +85,7 @@ Scope: seven life-planning domains are routable. STAARVERSE remains the eighth v
 
 See [alexa/README.md](alexa/README.md). One planner serves web MCP and Alexa. The adapter supports voice-only devices and adds an APL visual response only when the request advertises `Alexa.Presentation.APL`. Request-specific titles, timing and constraints appear in both speech and the visual response. The approved flight-derived poster maintains Guardian continuity. Tests verify supported-interface gating, speech/visual consistency, mixed-action ownership and request validation.
 
-The revised adapter and APL interface were activated and demonstrated in the user-provided October 22 simulator recording. See [alexa/README.md](alexa/README.md) for reproduction instructions. Physical Echo operation and gated Alexa+ API access remain unverified.
+The previous adapter and APL interface were activated and demonstrated in the user-provided October 22 simulator recording. The preparation upgrade below requires a new Lambda upload and interaction-model rebuild. See [alexa/README.md](alexa/README.md) for reproduction instructions. Physical Echo operation and gated Alexa+ API access remain unverified.
 
 ## Preparation upgrade
 

@@ -51,7 +51,7 @@ function detailFor(portal,clause,intent,timing) {
  Creativity:'List the audience, deliverables, approval checks and release order. Keep the assets staged; nothing is published.',
  Home:'List the arrival steps and device changes to review. No lock, light or other device is controlled.',
  Wellbeing:'Prepare a short reset with water, a pause and a realistic transition. This is a planning suggestion, not health advice.',
- Relationships:/\b(message|email|text)\b/i.test(clause)?`Draft: “${/late/i.test(clause)?'I am running late. Can we confirm a revised time?':'Can we confirm the details and timing?'}” Review the recipient, wording and timing; nothing is sent.`:'List the people, timing, location and gift details to confirm. No booking, purchase or message is made.',
+ Relationships:/\b(message|email|text)\b/i.test(clause)?'Review the editable message draft, recipient and timing below; nothing is sent.':'List the people, timing, location and gift details to confirm. No booking, purchase or message is made.',
  Community:'List the venue, access needs and route to verify. Live traffic, availability and opening hours have not been checked.',
  Style:'List the fitting time, garments, sizes and alterations to confirm. No fitting is booked and no item is purchased.'
  }[portal];
