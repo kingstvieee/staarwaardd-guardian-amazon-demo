@@ -86,3 +86,9 @@ Scope: seven life-planning domains are routable. STAARVERSE remains the eighth v
 See [alexa/README.md](alexa/README.md). One planner serves web MCP and Alexa. The adapter supports voice-only devices and adds an APL visual response only when the request advertises `Alexa.Presentation.APL`. Request-specific titles, timing and constraints appear in both speech and the visual response. The approved flight-derived poster maintains Guardian continuity. Tests verify supported-interface gating, speech/visual consistency, mixed-action ownership and request validation.
 
 The revised adapter and APL interface were activated and demonstrated in the user-provided October 22 simulator recording. See [alexa/README.md](alexa/README.md) for reproduction instructions. Physical Echo operation and gated Alexa+ API access remain unverified.
+
+## Preparation upgrade
+
+The browser now offers editable, copyable preparation drafts. The planner preserves quoted draft text and spoken times, asks about unfamiliar clauses, conditional actions and conflicting times, and avoids inventing a Work task for unrecognized requests. It remains rules-based; it is not a general language model or an execution agent.
+
+Alexa's updated interaction model adds “plan dinner,” “prepare …” and similar carrier phrases. The adapter renders separate task cards and gives specific fallback/clarification prompts. Package and deployment steps are in `alexa/README.md`. The previous simulator build is verified; this revision requires upload, model rebuild and simulator verification. A physical Echo is untested. Browser and Alexa remain independent clients of the same planner.

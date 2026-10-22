@@ -45,6 +45,8 @@ export default async function handler(request, response) {
     domain: step.portal,
     title: step.title || step.capability.replaceAll('_', ' '),
     detail: step.summary,
+    output: step.output,
+    needsClarification: step.status === 'needs_clarification',
     time: step.timing?.join(' / ') || 'Timing to confirm',
     sensitive: Boolean(step.externalAction),
     action: step.status

@@ -1,11 +1,11 @@
 import { buildGuardianPlan, judgeScenario } from '../src/guardian-core.mjs';
 
-const help = 'Welcome to Star Ward Guardian. Say run the demo, or say plan for followed by your request. I prepare plans only; I cannot send messages, make purchases, or control devices.';
+const help = 'Welcome to Star Ward Guardian. Say plan dinner, plan my meeting tomorrow, or run the demo. I prepare checklists and drafts for your review. Nothing is sent, booked or changed.';
 function say(text, end = false) {
   return { version: '1.0', response: {
     outputSpeech: { type: 'PlainText', text },
     card: { type: 'Simple', title: 'STAARWAARDD Guardian', content: text },
-    ...(!end ? { reprompt: { outputSpeech: { type: 'PlainText', text: 'Say plan for my meeting, or run the demo.' } } } : {}),
+    ...(!end ? { reprompt: { outputSpeech: { type: 'PlainText', text: 'Say plan dinner, plan my meeting tomorrow, or run the demo.' } } } : {}),
     shouldEndSession: end
   } };
 }
@@ -13,28 +13,35 @@ const publicDemo = 'https://staarwaardd-guardian-amazon-demo.vercel.app';
 const xml = text => String(text).replace(/[&<>]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 function withDisplay(result, event, plan) {
   if (!event?.context?.System?.device?.supportedInterfaces?.['Alexa.Presentation.APL']) return result;
-  const heading = plan ? plan.outcome : 'One request. A plan you can inspect.';
-  const body = plan ? plan.steps.map(s=>`${s.portal} / ${s.externalAction?'APPROVAL REQUIRED':'PREPARATION ONLY'}\n${s.title}\n${s.summary}`).join('\n\n') : 'Say run the demo, or say plan for followed by your request. Guardian prepares your next steps. Every decision stays yours.';
-  const visualText = (key,size,color) => ({type:'Text',text:'${payload.guardian.properties.'+key+'}',fontSize:size,color});
-  const content = {type:'Container',width:'100%',height:'100%',paddingLeft:24,paddingRight:24,paddingTop:20,paddingBottom:20,items:[
-    {type:'Text',text:'STAARWAARDD GUARDIAN',fontSize:24,color:'#c9deef'},
-    {type:'Container',direction:'row',grow:1,items:[
-      {type:'Image',source:publicDemo+'/assets/guardian-poster.jpg',width:'22vw',height:'65vh',scale:'best-fit'},
-      {type:'ScrollView',width:'70vw',height:'72vh',item:{type:'Container',items:[visualText('heading',25,'#ffffff'),visualText('body',19,'#dce9f2')]}}
+  const properties={};let nextText=0;
+  const text=(value,size=24,color='#ffffff')=>{const key='text'+(++nextText);properties[key]=xml(value);return {type:'Text',text:'${payload.guardian.properties.'+key+'}',fontSize:size,color};};
+  const card=(badge,title,detail)=>({type:'Frame',width:'100%',backgroundColor:'#182940',borderColor:'#8faac1',borderWidth:1,borderRadius:12,padding:18,spacing:14,item:{type:'Container',items:[text(badge,18,'#c9deef'),text(title,28),text(detail,22,'#dce9f2')]}});
+  const cards=plan ? [
+    ...(plan.questions.length?[card('DETAIL NEEDED','Please clarify',plan.questions.join(' '))]:[]),
+    ...plan.steps.map(step=>card(step.status==='needs_clarification'?'DETAIL NEEDED':step.externalAction?'APPROVAL REQUIRED':'PREPARATION ONLY',step.portal+' · '+step.title,(step.timing.length?step.timing.join(' / ')+'\n':'')+step.output)),
+    ...(plan.restrictions.length?[card('YOUR CONSTRAINTS','Kept for review',plan.restrictions.join('; '))]:[])
+  ] : [card('GUARDIAN',event?.request?.type==='LaunchRequest'?'Your next steps, together':'Your decision stays yours',result.response.outputSpeech.text)];
+  const content={type:'Container',width:'100%',height:'100%',paddingLeft:24,paddingRight:24,paddingTop:16,paddingBottom:16,items:[
+    text('STAARWAARDD GUARDIAN',22,'#c9deef'),
+    {type:'Container',direction:'row',grow:1,shrink:1,items:[
+      {type:'Image',source:publicDemo+'/assets/guardian-poster.jpg',width:'18vw',height:'60vh',scale:'best-fit'},
+      {type:'ScrollView',width:'74vw',height:'74vh',item:{type:'Container',width:'100%',items:cards}}
     ]},
-    {type:'Text',text:'PREPARATION ONLY / 0 EXTERNAL ACTIONS EXECUTED',fontSize:15,color:'#a9d7ed'}
+    text('0 ACTIONS EXECUTED · Scroll for drafts and details',16,'#a9d7ed')
   ]};
-  result.response.directives = [{type:'Alexa.Presentation.APL.RenderDocument',token:'guardian-plan',document:{type:'APL',version:'1.7',theme:'dark',mainTemplate:{parameters:['payload'],items:[{type:'Frame',width:'100vw',height:'100vh',backgroundColor:'#0c182c',item:content}]}},datasources:{guardian:{type:'object',properties:{heading:xml(heading),body:xml(body)}}}}];
+  result.response.directives=[{type:'Alexa.Presentation.APL.RenderDocument',token:'guardian-plan',document:{type:'APL',version:'1.7',theme:'dark',mainTemplate:{parameters:['payload'],items:[{type:'Frame',width:'100vw',height:'100vh',backgroundColor:'#0c182c',item:content}]}},datasources:{guardian:{type:'object',properties}}}];
   return result;
 }
 function speakPlan(plan,event) {
-  const summary = `I prepared a plan across ${plan.portals.join(', ')}. `;
-  const details = plan.steps.map(step => `${step.portal}: ${step.title}.`).join(' ');
-  const timing=plan.timing?.length?' I kept your timing: '+plan.timing.join(', ')+'.':'';
-  const constraints=plan.restrictions?.length?' Your instruction '+plan.restrictions.join('; ')+' is preserved.':'';
-  return withDisplay(say(summary + details + timing + constraints + (plan.approvalRequired
-    ? ' The marked actions remain on hold. This demo cannot execute them, even if you say yes.'
-    : ' This is preparation only. No messages were sent, bookings made, or devices changed.')),event,plan);
+  if(plan.questions.length)return withDisplay(say('I need a detail before finishing this plan. '+plan.questions[0]+' Say plan followed by your complete revised request. Nothing was executed.'),event,plan);
+  const details=plan.steps.slice(0,4).map(step=>step.portal+': '+step.title+'. '+(step.externalAction?'Approval required. ':'Preparation only. ')).join(' ');
+  const timing=plan.timing.length?' Timing: '+plan.timing.join(', ')+'.':'';
+  const constraints=plan.restrictions.length?' Your instruction '+plan.restrictions.join('; ')+' is preserved.':'';
+  const tail=plan.steps.length>4?' The remaining steps are on your plan card.':'';
+  const draft=plan.steps.find(s=>s.portal==='Relationships'&&/Draft:/.test(s.output));
+  const preview=draft?' Suggested message: '+draft.output.split('Draft: ')[1].split('\n')[0]+'. Review before sending.':'';
+  const result=withDisplay(say('I prepared '+plan.steps.length+(plan.steps.length===1?' step. ':' steps. ')+details+timing+constraints+tail+preview+(plan.approvalRequired?' The marked actions remain on hold. This demo cannot execute them, even if you say yes.':' No messages were sent, bookings made, or devices changed.')),event,plan);
+  return result;
 }
 
 // Lambda invocation only. Do not expose this function through a public Function URL.
@@ -55,14 +62,15 @@ export async function handler(event) {
   switch (intent?.name) {
     case 'GuardianPlanIntent': {
       const value = intent.slots?.request?.value;
-      if (typeof value !== 'string' || !value.trim()) return say('Tell me what to prepare. For example, say plan for my meeting tomorrow.');
+      if (typeof value !== 'string' || !value.trim()) return withDisplay(say('Tell me what to prepare. For example, say plan dinner or plan my meeting tomorrow.'),event);
       return speakPlan(buildGuardianPlan(value.trim().slice(0, 2000), { source: 'Alexa custom skill' }),event);
     }
     case 'GuardianDemoIntent': return speakPlan(judgeScenario(),event);
     case 'AMAZON.StopIntent':
     case 'AMAZON.CancelIntent': return say('Guardian closed. No external actions were executed.', true);
-    case 'AMAZON.YesIntent': return say('This demo prepares plans only. Saying yes does not execute an action. Say plan for followed by a new request.');
-    case 'AMAZON.NoIntent': return say('No external actions were executed. Say plan for followed by a new request.');
-    default: return say(help);
+    case 'AMAZON.YesIntent': return withDisplay(say('This demo prepares plans only. Saying yes does not execute an action. Say plan followed by a new request.'),event);
+    case 'AMAZON.NoIntent': return withDisplay(say('No external actions were executed. Say plan followed by a new request.'),event);
+    case 'AMAZON.FallbackIntent': return withDisplay(say('I did not catch the task. Try plan dinner, plan my meeting tomorrow, or run the demo. Please repeat the whole request. Nothing was executed.'),event);
+    default: return withDisplay(say(help),event);
   }
 }

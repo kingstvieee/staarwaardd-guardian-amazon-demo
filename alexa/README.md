@@ -1,37 +1,39 @@
-# Real Alexa connection — development skill
+# Guardian Alexa custom skill
 
-This adapter connects the existing deterministic Guardian planner to the standard Alexa Skills Kit. It is **not** an Alexa+ MCP add-on, a browser-embedded Alexa assistant, or evidence of live activation. The separate competition MCP endpoint and approved visual assets are unchanged. The spoken skill and browser demo are separate interfaces; browser flight playback is not remotely controlled by this adapter.
+The existing development skill's launch, request-specific speech, Guardian APL display and no-execution response to “yes” were verified in the user's October 22 Amazon Simulator recording. This update adds natural phrasing, clarification, drafts and separate scrollable task cards. **This revision still needs upload, model rebuild and a simulator check.** A physical Echo and gated Alexa+ add-on are unverified.
 
-## Activation
+The browser MCP client and standard Alexa skill share the same rules-based planner. They are independent interfaces. Alexa does not control browser flight playback or synchronize its state.
 
-1. In the Alexa Developer Console, first check for an existing Guardian skill to reuse. Otherwise create **STAARWAARDD Guardian**, Custom model, provision your own backend, English (US) initially. Keep the skill in development; do not submit for certification.
-2. Paste `alexa/interaction-model.json` into Build → Interaction Model → JSON Editor. Save and build. The invocation is **star ward guardian**. Additional locales must be built/tested separately.
-3. Create a Node.js 22 AWS Lambda function in an Alexa-supported region (for example us-east-1). Upload a ZIP whose root contains `alexa/lambda.mjs` and `src/guardian-core.mjs`, retaining these paths. Set the handler to **alexa/lambda.handler**. This adapter needs no npm packages, AWS model credentials, or personal-service access. Lambda usage may incur normal AWS charges; no paid resources have been created by preparing this source.
-4. Set the Lambda environment variable **ALEXA_SKILL_ID** to the exact skill ID shown in the developer console. Add the **Alexa Skills Kit** Lambda trigger with skill ID verification enabled and that same ID. Do not create a Function URL or expose a general HTTP route. The skill-ID check in source is defense in depth, not a substitute for the restricted Lambda trigger.
-5. Copy the Lambda ARN into the skill's Endpoint → AWS Lambda ARN → Default Region. Save. In Test, enable **Development** and select English (US).
-6. Test these in the Alexa Simulator: `open star ward guardian`; `plan for my meeting tomorrow`; `plan for publish my campaign and unlock my home door`; `yes`; `stop`. Verify the actual Skill I/O request/response and spoken output. The external-action request must remain on hold, including after yes.
-7. For a physical-device test, use a supported Alexa-enabled device registered to the same developer account and configured for the skill's locale. Verify actual invocation before calling the device connection live. Availability on an Alexa+ device is a separate compatibility check.
+## Update the existing skill
 
-## Proof required before claiming live Alexa
+1. Run `python3 scripts/package-alexa.py /absolute/path/Guardian_Lambda_Upgrade.zip`. The ZIP has `index.mjs` at its root; no npm dependencies or model credentials are needed.
+2. In **AWS → Lambda → staarwaardd-guardian → Code → Upload from → ZIP**, upload the ZIP and save/deploy. Handler: **index.handler**. Keep the current **ALEXA_SKILL_ID** and skill-restricted **Alexa Skills Kit** trigger. Do not add a Function URL.
+3. Extract `interaction-model.json` from the ZIP. In **Amazon Developer Console → Build → Interaction Model → JSON Editor**, replace the model with its contents. Save and build the model for **English (CA)**. Other locales require their own build and test.
+4. Keep **Build → Interfaces → Alexa Presentation Language** enabled. In **Test**, choose Development, English (CA), and a display-capable device.
 
-A successful Developer Console build, a real Alexa Simulator request reaching the Lambda function and returning spoken output, plus a device recording if device operation is claimed. Local fixture tests establish adapter behavior only. No Alexa or AWS account has been activated/configured by this commit.
+## Acceptance checks
 
-Record the live simulator/device interaction beside the existing Guardian browser demo. Identify it as an **Alexa custom skill**. It does not establish access to Alexa+'s gated add-on tools or synchronize the two interfaces. Browser text-to-speech must never be presented as Alexa.
+- `open star ward guardian`: speaks help and displays Guardian.
+- `plan dinner`: returns a Relationships preparation card instead of fallback help.
+- `plan my meeting tomorrow at three`: preserves the spoken time.
+- `plan publish my campaign and prepare meeting notes tomorrow`: Creativity requires approval; Work is preparation only.
+- `plan draft a message to my family saying hello`: provides a suggested draft, never sends it.
+- `plan my meeting at three and my meeting at five`: asks which time, without claiming the plan is complete.
+- `yes`: explicitly executes nothing and updates the display.
+- An unrelated phrase: gives examples and requests the complete task again.
+- Voice-only device fixture: speech and Simple card, no unsupported APL directive.
 
-Run `node test/alexa.mjs` locally. To package without dependencies, from the repository root: `zip guardian-alexa-lambda.zip alexa/lambda.mjs src/guardian-core.mjs` (do not commit the ZIP).
+For a real Echo test, use a device on the same developer account and skill locale. Record invocation, a plan, and “yes.” Do not call physical-device operation verified until that recording exists.
+
+## Scope and verification
+
+`npm test` covers the shared planner, official MCP SDK transport, Alexa response lifecycle, skill ID and timestamp checks, display gating, escaped text, fallback and clarification. Local checks do not verify Amazon utterance recognition or the rendered APL layout. The pre-update video remains evidence of the previous simulator build only.
+
+The skill prepares editable checklists and message drafts. It does not read private accounts, publish, send, book, buy, or control devices. “Approval required” identifies a requested action for human review; “yes” never executes it. Complex language remains a limitation of the rules-based planner; unfamiliar clauses and several ambiguity patterns now request clarification.
 
 ## Official references
 
 - https://developer.amazon.com/en-US/docs/alexa/custom-skills/host-a-custom-skill-as-an-aws-lambda-function.html
+- https://developer.amazon.com/en-US/docs/alexa/custom-skills/slot-type-reference.html
+- https://developer.amazon.com/en-US/docs/alexa/alexa-presentation-language/apl-scrollview.html
 - https://developer.amazon.com/en-US/docs/alexa/devconsole/test-your-skill.html
-- https://amazonappdev2026.devpost.com/details/faqs
-
-Amazon's hackathon FAQ says the Alexa+ Category SDK, MCP Toolkit, CLI and Web Simulator are select-partner preview tools and participants cannot apply for access. It explicitly permits self-hosted MCP/Agent Skill submissions demonstrated through a participant's own front end. This custom skill is an additional real-Alexa interface; the competition entry retains its MCP implementation.
-
-## Visual response revision (October 22)
-
-The user's October 22, 2026 recording demonstrates the revised adapter in Amazon's Alexa Simulator. Launch returns speech and a Guardian welcome screen. The request `plan for publish my campaign and prepare meeting notes for tomorrow at three` returns matching speech and APL content: Work is PREPARATION ONLY and Creativity is APPROVAL REQUIRED. Saying yes returns the no-execution response and updates Device Display. This establishes simulator operation, not physical Echo testing or browser-tab synchronization.
-
-Upload the revised ZIP to the existing `staarwaardd-guardian` Lambda and deploy. Keep the existing `ALEXA_SKILL_ID` and skill-restricted Alexa Skills Kit trigger. In the skill console, enable **Build → Interfaces → Alexa Presentation Language**, save/build, and retest using a screen-capable simulator. Do not create a Function URL.
-
-Check `plan for publish my campaign and prepare meeting notes tomorrow at three`: Creativity must show approval required, Work preparation only, and both speech and screen must retain tomorrow. Voice-only devices receive speech and a card without APL. No browser-tab synchronization or gated Alexa+ add-on access is claimed.

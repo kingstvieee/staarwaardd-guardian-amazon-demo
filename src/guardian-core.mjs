@@ -10,7 +10,7 @@ const patterns = {
 };
 const external=/\b(send|email|text|invite|book|buy|purchase|cancel|delete|share|publish|pay|order|post|register|rsvp|unlock|lock|turn on|turn off|change temperature)\b/i;
 const preparation=/\b(draft|prepare|outline|plan|review|preview|stage|suggest|list|research)\b/i;
-const negative=/\b(do not|don't|never|without|must not|cannot|can't)\b/i;
+const negative=/\b(do not|don't|never|without|must not|cannot|can't|not to)\b/i;
 const clean=s=>String(s??'').replace(/\s+/g,' ').trim().slice(0,2000);
 function domainsFor(text) {
  const domains=PORTALS.filter(p=>patterns[p].test(text));
@@ -19,15 +19,18 @@ function domainsFor(text) {
  return domains;
 }
 function clausesFor(request) {
- return request.replace(/\bGuardian[, :]*/ig,'').split(/\s*(?:[.;,]|\bbut\b|\bthen\b|\band\b)\s*/i).map(clean).filter(Boolean);
+ const quotes=[];
+ const masked=request.replace(/[“"]([^”"]*)[”"]/g,value=>{quotes.push(value);return 'QUOTED'+(quotes.length-1)+'TOKEN';});
+ return masked.replace(/\bGuardian[, :]*/ig,'').replace(/\b([ap])\.m\./ig,'$1m').replace(/([a-z])’([a-z])/ig,"$1'$2").split(/\s*(?:[.;,]|\bbut\b|\bthen\b|\band\b|\balso\b)\s*/i).map(part=>clean(part.replace(/QUOTED(\d+)TOKEN/g,(_,i)=>quotes[Number(i)]))).filter(Boolean);
 }
 function intentFor(text) {
  const match=external.exec(text), prep=preparation.exec(text), neg=negative.exec(text);
  const action=match?.[1]?.toLowerCase();
  // Only the span preceding the external verb determines whether it is prohibited or a draft.
  const prohibited=Boolean(match&&neg&&neg.index<match.index);
+ const uncertain=Boolean(match&&(/\b(if|unless|except|maybe|whether|or|not until|not before|only after|only if)\b/i.test(text) || (neg&&neg.index>match.index) || [...text.matchAll(new RegExp(external.source,'ig'))].length>1));
  const drafting=Boolean(match&&prep&&prep.index<match.index);
- return {action,prohibited,externalAction:Boolean(match&&!prohibited&&!drafting)};
+ return {action,prohibited,uncertain,externalAction:Boolean(match&&!prohibited&&!drafting)};
 }
 export function detectPortals(request='') { const found=domainsFor(clean(request));return found.length?found:['Work']; }
 export function requiresApproval(request='') { return clausesFor(clean(request)).some(c=>intentFor(c).externalAction); }
@@ -54,7 +57,18 @@ function detailFor(portal,clause,intent,timing) {
  }[portal];
  return `${subject} ${guide}${timing.length?' Stated timing: '+timing.join('; ')+'.':''}${intent.prohibited?' Your do-not-execute instruction is preserved.':''}${intent.externalAction?' Approval required for the requested '+intent.action+' action; this demo cannot execute it.':''}`;
 }
-function extractTiming(request){return [...request.matchAll(/\b(?:tomorrow|today|tonight|next\s+\w+|(?:at|before|after|by)\s+\d{1,2}(?::\d{2})?\s*(?:a\.?m\.?|p\.?m\.?)?|\d+\s*(?:minutes?|hours?)\s+late)\b/ig)].map(m=>m[0]);}
+function preparedOutput(portal,clause,intent) {
+ if(intent.uncertain)return 'Clarify the action and condition before using this draft.';
+ const timing=extractTiming(clause).join('; ')||'[confirm time]';
+ if(portal==='Relationships'&&/\b(message|email|text)\b/i.test(clause)) {
+  const recipient=clause.match(/\b(?:to|email|text)\s+(?:my\s+)?(family|partner|friend|mom|dad)\b/i)?.[1]||'[recipient]';
+  const quoted=clause.match(/[“"]([^”"]+)[”"]/);
+  return 'To: '+recipient+'\nDraft: '+(quoted?quoted[1]:/\blate\b/i.test(clause)?'I am running late. Could we confirm a new time?':'Could we confirm '+(/\bdinner\b/i.test(clause)?'our dinner plans':'the details')+' for '+timing+'?')+'\nReview before sending.';
+ }
+ const items={Work:['Goal / topic: '+clause,'Decisions needed: [add]','Agenda: [add priorities]','Owner / follow-up: [confirm]'],Creativity:['Brief: '+clause,'Audience: [confirm]','Assets / copy: [add]','Release approval: [review]'],Home:['Routine: '+clause,'Arrival / device state: [confirm]','Device changes: review manually'],Wellbeing:['Reset: pause, get water, choose one next step','Duration: [choose a realistic break]'],Relationships:['Commitment: '+clause,'People / location: [confirm]','Availability / budget: [check]'],Community:['Event / route: '+clause,'Venue / accessibility: [verify]','Travel and opening hours: [verify]'],Style:['Fitting / outfit: '+clause,'Garments / size / alterations: [confirm]','Appointment / budget: [check]']}[portal];
+ return [...items,'Timing: '+timing,'Status: preparation only; nothing executed.'].join('\n');
+}
+function extractTiming(request){return [...request.matchAll(/\b(?:tomorrow|today|tonight|next\s+\w+|(?:at|before|after|by)\s+(?:\d{1,2}(?::\d{2})?|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|noon|midnight)\s*(?:a\.?m\.?|p\.?m\.?)?|\d+\s*(?:minutes?|hours?)\s+late)\b/ig)].map(m=>m[0]);}
 export function buildGuardianPlan(request,context={}) {
  request=clean(request); const clauses=clausesFor(request);
  const timing=extractTiming(request);
@@ -70,6 +84,8 @@ export function buildGuardianPlan(request,context={}) {
   if (!domains.length && intent.externalAction && !intent.prohibited) { domains=lastDomains.length?[lastDomains[lastDomains.length-1]]:['Work']; unresolved.push('Confirm the target and recipient for “'+clause+'” before reviewing this action.'); }
   if(domains.length)lastDomains=domains;
   // A prohibition such as “do not send it” adds a constraint, never a new invented domain.
+  if(intent.uncertain)unresolved.push('Please separate or clarify the action and condition in “'+clause+'”.');
+  if(!domains.length&&!intent.prohibited&&!intent.externalAction)unresolved.push('What task should I prepare for “'+clause+'”?');
   if(intent.prohibited)continue;
   for(const portal of domains){
    // Temporal references are context, not a request to execute against the referenced domain.
@@ -87,12 +103,14 @@ export function buildGuardianPlan(request,context={}) {
  for(const e of entries){const old=byPortal.get(e.portal);if(!old)byPortal.set(e.portal,e);else byPortal.set(e.portal,{portal:e.portal,clause:old.clause+'; '+e.clause,intent:e.intent.externalAction?e.intent:old.intent});}
  const portals=PORTALS.filter(p=>byPortal.has(p));
  const questions=[...unresolved];
- if(!portals.length){portals.push('Work');byPortal.set('Work',{portal:'Work',clause:request||'a new request',intent:{externalAction:false}});questions.push('What specific task, people and deadline should I prepare for?');}
- const steps=portals.map((portal,i)=>{const {clause,intent}=byPortal.get(portal);return{id:`${portal.toLowerCase()}-${i+1}`,portal,capability:portal.toLowerCase()+'_preparation',title:titleFor(portal,clause,intent),status:intent.externalAction?'awaiting_approval':'prepared',externalAction:Boolean(intent.externalAction),source:clause,timing:extractTiming(clause),summary:detailFor(portal,clause,intent,extractTiming(clause))};});
+ if(!portals.length&&!questions.length)questions.push('What specific task, people and deadline should I prepare for?');
+ const steps=portals.map((portal,i)=>{const {clause,intent}=byPortal.get(portal);return{id:`${portal.toLowerCase()}-${i+1}`,portal,capability:portal.toLowerCase()+'_preparation',title:titleFor(portal,clause,intent),status:intent.uncertain?'needs_clarification':intent.externalAction?'awaiting_approval':'prepared',externalAction:Boolean(intent.externalAction),source:clause,timing:extractTiming(clause),summary:detailFor(portal,clause,intent,extractTiming(clause)),output:preparedOutput(portal,clause,intent)};});
  const held=steps.filter(s=>s.externalAction).length;
+ for(const step of steps){const clocks=step.timing.filter(t=>/^at /i.test(t)).map(t=>t.toLowerCase().trim());if(new Set(clocks).size>1)questions.push('Which time should '+step.portal+' use: '+clocks.join(' or ')+'?');}
+ if(questions.length)for(const step of steps)step.status='needs_clarification';
  // Dependencies are proposed scheduling constraints, never claimed messages between agents.
  const dependencies=/\b(late|before|after|delay\w*)\b/i.test(request)&&portals.includes('Work')?portals.filter(p=>p!=='Work').map(p=>({from:'Work',to:p,signal:`Review ${p} timing against the stated work constraint: ${timing.join('; ')||clauses.find(c=>/late|before|after|delay/i.test(c))}. No schedule has been changed.`})):[];
- return {request,mode:'guardian_orchestration',portals,approvalRequired:held>0,state:held?'prepared_for_approval':'prepared',context,steps,timing,restrictions,questions,dependencies,planner:'structured rules; no language-model call',outcome:questions.length?'Guardian needs one clarification before preparing a useful plan.':`Prepared ${steps.length} request-specific step${steps.length===1?'':'s'} across ${portals.join(', ')}. ${held?held+' requested action'+(held===1?' is':'s are')+' held for review.':'All steps remain preparation only.'} Nothing was executed.`};
+ return {request,mode:'guardian_orchestration',portals,approvalRequired:held>0,state:questions.length?'needs_clarification':held?'prepared_for_approval':'prepared',context,steps,timing,restrictions,questions,dependencies,planner:'structured rules; no language-model call',outcome:questions.length?'Guardian needs one clarification before preparing a useful plan.':`Prepared ${steps.length} request-specific step${steps.length===1?'':'s'} across ${portals.join(', ')}. ${held?held+' requested action'+(held===1?' is':'s are')+' held for review.':'All steps remain preparation only.'} Nothing was executed.`};
 }
 export function judgeScenario(){
  const request='Guardian, my investor pitch is running 30 minutes late. Prepare my launch, fitting, anniversary dinner, gift delivery, wellbeing reset and home arrival. Draft a message about dinner but do not send it.';

@@ -114,11 +114,19 @@ function render(data) {
   const actions = [...(plan.now || []), ...(plan.today || []), ...(plan.week || [])];
   $('#actionsList').innerHTML = actions.map((item) => `
     <article class="action-card ${item.sensitive ? 'approval' : ''}">
-      <div><span>${esc(item.domain)}</span>${item.sensitive ? '<em>APPROVAL REQUIRED</em>' : '<em>SAFE TO PREPARE</em>'}</div>
+      <div><span>${esc(item.domain)}</span>${item.needsClarification ? '<em>DETAIL NEEDED</em>' : item.sensitive ? '<em>APPROVAL REQUIRED</em>' : '<em>SAFE TO PREPARE</em>'}</div>
       <h3>${esc(item.title)}</h3>
       <p>${esc(item.detail)}</p>
       <small>${esc(item.time || '')}</small>
+      ${item.output ? `<label class="draft-label">EDIT YOUR PREPARATION DRAFT<textarea class="prepared-draft" rows="6">${esc(item.output)}</textarea></label><button type="button" class="text-button copy-draft">COPY DRAFT</button><span class="copy-status" role="status"></span>` : ''}
     </article>`).join('');
+
+  $('#actionsList').querySelectorAll('.copy-draft').forEach(button=>button.addEventListener('click',async()=>{
+    const draft=button.closest('article').querySelector('.prepared-draft');
+    const feedback=button.nextElementSibling;
+    try {await navigator.clipboard.writeText(draft.value);feedback.textContent='Copied. Review before using.';}
+    catch {draft.focus();draft.select();feedback.textContent='Select and copy the draft text.';}
+  }));
 
   const metrics = data.metrics || {
     portalsActivated: domains.length,
