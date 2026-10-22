@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import {buildGuardianPlan,requiresApproval} from '../src/guardian-core.mjs';
+const mixed=buildGuardianPlan('Publish my campaign and prepare my meeting notes tomorrow at 3 pm');
+assert.equal(mixed.steps.find(s=>s.portal==='Creativity').externalAction,true);
+assert.equal(mixed.steps.find(s=>s.portal==='Work').externalAction,false);
+assert.ok(mixed.timing.includes('tomorrow'));assert.match(mixed.steps[1].summary,/3 pm/);
+const draft=buildGuardianPlan('Draft a message to my family but do not send it');
+assert.deepEqual(draft.portals,['Relationships']);assert.equal(draft.approvalRequired,false);assert.match(draft.restrictions.join(),/do not send/);
+assert.equal(requiresApproval('Do not send a message and publish my campaign'),true);
+assert.equal(requiresApproval('Draft an email to my family'),false);
+const newRequest=buildGuardianPlan('Prepare a fitting for my silver jeans tomorrow at 6 pm');
+const other=buildGuardianPlan('Prepare my investor meeting notes today at 2 pm');
+assert.notEqual(newRequest.steps[0].title,other.steps[0].title);assert.match(newRequest.steps[0].summary,/silver jeans/);assert.match(other.steps[0].summary,/investor/);
+const unknown=buildGuardianPlan('Help me with homework');
+assert.equal(unknown.approvalRequired,false);assert.ok(unknown.questions.length);assert.ok(!unknown.portals.includes('Home'));
+console.log('Request specificity, mixed ownership, draft-only constraints, timing and clarification checks passed.');

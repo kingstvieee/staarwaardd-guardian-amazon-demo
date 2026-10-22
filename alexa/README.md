@@ -27,3 +27,11 @@ Run `node test/alexa.mjs` locally. To package without dependencies, from the rep
 - https://amazonappdev2026.devpost.com/details/faqs
 
 Amazon's hackathon FAQ says the Alexa+ Category SDK, MCP Toolkit, CLI and Web Simulator are select-partner preview tools and participants cannot apply for access. It explicitly permits self-hosted MCP/Agent Skill submissions demonstrated through a participant's own front end. This custom skill is an additional real-Alexa interface; the competition entry retains its MCP implementation.
+
+## Visual response revision (October 22)
+
+The previous adapter's launch, demo, held request and yes boundary were captured in the user's Amazon Simulator recording. This code adds request-specific speech and an APL screen generated from the same plan. The visual revision is not yet verified live.
+
+Upload the revised ZIP to the existing `staarwaardd-guardian` Lambda and deploy. Keep the existing `ALEXA_SKILL_ID` and skill-restricted Alexa Skills Kit trigger. In the skill console, enable **Build → Interfaces → Alexa Presentation Language**, save/build, and retest using a screen-capable simulator. Do not create a Function URL.
+
+Check `plan for publish my campaign and prepare meeting notes tomorrow at three`: Creativity must show approval required, Work preparation only, and both speech and screen must retain tomorrow. Voice-only devices receive speech and a card without APL. No browser-tab synchronization or gated Alexa+ add-on access is claimed.

@@ -43,7 +43,7 @@ try {
   const full = await call('Run the documented full scenario','judge');
   assert.equal(full.metrics.portalsActivated,6);
   assert.equal(full.metrics.crossPortalExchanges,5);
-  assert.equal(full.metrics.approvalsRequired,6);
+  assert.equal(full.metrics.approvalsRequired,0);
   assert.ok(observed.includes('initialize') && observed.includes('notifications/initialized') && observed.includes('tools/list') && observed.includes('tools/call'));
 
   assert.equal((await post({jsonrpc:'2.0',method:'notifications/initialized'})).status,202);

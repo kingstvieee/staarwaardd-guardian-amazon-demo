@@ -27,12 +27,17 @@ for (const name of ['cover', 'worlds']) {
   bundled = bundled.replaceAll("url('/assets/"+name+".webp')", 'var(--'+name+'-art)');
 }
 const tourAudio = {};
-for (const name of [...Array.from({length:10}, (_,i)=>'voice-'+String(i+1).padStart(2,'0')), 'instrumental']) {
+for (const name of [...Array.from({length:10}, (_,i)=>'voice-'+String(i+1).padStart(2,'0')), 'instrumental','guardian-welcome']) {
   const path = '/audio/'+name+'.mp3';
   const bytes = await readFile(new URL('public'+path, import.meta.url));
   tourAudio[path] = 'data:audio/mpeg;base64,'+bytes.toString('base64');
   bundled = bundled.replaceAll('src="'+path+'"', 'data-audio="'+path+'"');
 }
+const flightManifest=JSON.parse(await read('public/assets/guardian-flight.json'));
+const flight=Buffer.concat(await Promise.all(flightManifest.parts.map(name=>readFile(new URL('public/assets/'+name,import.meta.url)))));
+const companion=await readFile(new URL('public/assets/guardian-center.mp4',import.meta.url));
+const poster=await readFile(new URL('public/assets/guardian-poster.jpg',import.meta.url));
+bundled=bundled.replaceAll('/assets/guardian-arrival.mp4','data:video/mp4;base64,'+flight.toString('base64')).replaceAll('/assets/guardian-center.mp4','data:video/mp4;base64,'+companion.toString('base64')).replaceAll('/assets/guardian-poster.jpg','data:image/jpeg;base64,'+poster.toString('base64'));
 const audioBootstrap = 'window.demoTourAudio='+JSON.stringify(tourAudio)+';document.querySelectorAll("[data-audio]").forEach(el=>el.src=window.demoTourAudio[el.dataset.audio]);';
 const imageBootstrap = 'window.demoOffline=true;document.getElementById("connectMcp").disabled=true;document.getElementById("mcpStatus").textContent="OFFLINE SOURCE PREVIEW / Open the hosted demo for real MCP calls";const demoArtwork='+JSON.stringify(artwork)+';document.querySelectorAll("[data-art]").forEach(el=>el.src=demoArtwork[el.dataset.art]);for(const [name,url] of Object.entries(demoArtwork))document.documentElement.style.setProperty("--"+name+"-art", "url("+url+")");';
 bundled = bundled.replace('<script>', '<script>'+imageBootstrap+audioBootstrap);
