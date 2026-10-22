@@ -48,3 +48,13 @@ These are automated structure/content checks. They do not render APL. AWS Consol
 ## Human feedback
 
 See [USABILITY_NOTES.md](USABILITY_NOTES.md) for one phone tester’s feedback relayed through the founder, including the navigation issue and the separately published mobile repair. No customer success rate or controlled-user outcome is derived from that report.
+
+## Final simulator evidence and scope freeze
+
+The founder supplied October 22 screenshots at 5:52–5:53 PM Toronto showing the uploaded email/card package running in the English (CA) Alexa Simulator. The email request returns Alex, a budget subject, three separate paragraph starts and a spoken draft preview. Nothing was sent. These screenshots establish that the new draft path ran; they do not establish complete text visibility or scrolling across all displays.
+
+Remaining observed limitations: long paragraph lines extend beyond the captured visible preview; “dinner for nine p.m.” triggers an unnecessary time-versus-party-size clarification; the one-word reply “time” falls back rather than continuing the prior request; and “at 930 pm” remains in request text while the extracted timing only shows “tonight.” Do not claim these cases fixed. The phone capture also clips part of the desktop page, so the exact extent of APL horizontal overflow needs rendered inspection.
+
+The separately supplied Guardian_Email_Cards_Fix.zip was uploaded by the founder and is evidenced above. It contains follow-up changes beyond the published repository revision described by the 21-case report; that score must not be attributed to live Alexa speech recognition or to these newly observed timing cases.
+
+The approved 2:34 video remains unchanged. Judging uses the working public browser MCP simulation and recorded standard Alexa Simulator evidence. Physical Echo testing, general language coverage, account integrations and measured customer outcomes remain unverified. One informal tester report is not a controlled study. No new feature work or media generation is required to preserve this demonstrated submission scope.
