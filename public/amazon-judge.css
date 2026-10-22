@@ -67,3 +67,22 @@ body{background:#fff}.mastnav{background:#fafdff;color:#061122;border-bottom:1px
 .guardian-presence{width:232px;grid-template-columns:64px 1fr;border-radius:12px}.guardian-presence video{width:64px;height:142px;object-fit:cover}.presence-copy{padding:8px}.presence-copy b{font-size:10px}.presence-copy #presenceState{font-size:8px;margin:4px 0}.presence-copy button{font-size:8px;padding:5px 3px;margin-bottom:4px}.presence-copy #speechStatus{display:none}.guardian-presence.listening #speechStatus{display:block}.tour-active .guardian-presence{bottom:160px}@media(max-width:700px){.guardian-presence{width:180px;grid-template-columns:48px 1fr}.guardian-presence video{width:48px;height:142px}.tour-active .guardian-presence{bottom:220px}}
 
 .draft-label{display:block;margin-top:16px;font-size:11px;letter-spacing:.1em}.prepared-draft{display:block;width:100%;box-sizing:border-box;margin:8px 0;padding:12px;min-height:150px;background:#f4f7fa;color:#14243b;border:1px solid #8faac1;font-family:inherit;font-size:14px;line-height:1.5;resize:vertical}.copy-draft{margin-right:12px}.copy-status{font-size:12px}.prepared-draft:focus{outline:2px solid #5c7e9c;outline-offset:2px}
+
+/* Phone usability: visible results, accessible tap targets, and an explicit plan jump. */
+#result,#request{scroll-margin-top:84px}
+.presence-copy button,.scenario-menu button,.hub-choices button{touch-action:manipulation}
+.scenario-menu{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+@media(max-width:700px){
+ .guardian-presence{left:8px;right:8px;bottom:max(8px,env(safe-area-inset-bottom));width:auto;grid-template-columns:48px 1fr;max-height:42dvh;overflow:auto}
+ .guardian-presence video{height:150px;max-height:100%;align-self:center}
+ .presence-copy{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:8px}
+ .presence-copy>b,.presence-copy #presenceState,.presence-copy #speechStatus{grid-column:1/-1}
+ .presence-copy button{min-height:44px;margin:0;font-size:11px;padding:8px;line-height:1.25}
+ .presence-copy #presenceState{margin:0}
+ .scenario-menu button,.hub-choices button,.studio-buttons button,.mastnav a{min-height:44px}
+ .studio-buttons{flex-wrap:wrap}
+ .prepared-draft{font-size:16px}
+ .action-card{overflow-wrap:anywhere;min-width:0}
+ .tour-active .guardian-presence{bottom:220px}
+ body{padding-bottom:210px}
+}
