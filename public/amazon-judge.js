@@ -80,7 +80,7 @@ async function run(mode) {
   try {
     const data = await guardianRequest(mode, $('#request').value);
     render(data);
-    window.guardianState?.('PLAN READY · YOUR CALL');
+    window.guardianState?.(data.plan?.questions?.length ? 'DETAIL NEEDED · YOUR CALL' : 'PLAN READY · YOUR CALL');
     status.textContent = data.plan?.questions?.length ? 'One detail needed: '+data.plan.questions.join(' ') : 'Plan prepared. Review the request-specific steps; zero external actions executed.';
     return data;
   } catch (error) {
